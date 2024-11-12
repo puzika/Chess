@@ -1,32 +1,97 @@
+import { useAppSelector } from '../../store/hooks';
+import { selectPosition } from './board.slice';
+import WhiteKing from '../../assets/king-w.svg';
+import WhiteQueen from '../../assets/queen-w.svg';
+import WhiteRook from '../../assets/rook-w.svg';
+import WhiteBishop from '../../assets/bishop-w.svg';
+import WhiteKnight from '../../assets/knight-w.svg';
+import WhitePawn from '../../assets/pawn-w.svg';
+import BlackKing from '../../assets/king-b.svg';
+import BlackQueen from '../../assets/queen-b.svg';
+import BlackRook from '../../assets/rook-b.svg';
+import BlackBishop from '../../assets/bishop-b.svg';
+import BlackKnight from '../../assets/knight-b.svg';
+import BlackPawn from '../../assets/pawn-b.svg';
 import * as S from './board.style';
 import * as svar from '../../variables.style';
 
-const files: string[] = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
-const ranks: string[] = ['1', '2', '3', '4', '5', '6', '7', '8'].reverse();
+const RANKS: number = 8;
+const FILES: number = 8;
 
-const isBlack = (idxRank: number, idxFile: number): boolean => {
-   return (idxRank % 2 === 0 && idxFile % 2 !== 0) || (idxRank % 2 !== 0 && idxFile % 2 === 0);
+const files: string[] = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+
+interface Pieces {
+   [key: string]: string,
 }
 
+const pieces: Pieces = {
+   'K': WhiteKing,
+   'Q': WhiteQueen,
+   'R': WhiteRook,
+   'B': WhiteBishop,
+   'N': WhiteKnight,
+   'P': WhitePawn,
+   'k': BlackKing,
+   'q': BlackQueen,
+   'r': BlackRook,
+   'b': BlackBishop,
+   'n': BlackKnight,
+   'p': BlackPawn,
+}
+
+const isBlack = (rankIdx: number, fileIdx: number): boolean => {
+   return (rankIdx % 2 === 0 && fileIdx % 2 !== 0) || (rankIdx % 2 !== 0 && fileIdx % 2 === 0);
+}
+
+const generatePosition = (positionString: string): string[][] => {
+   const position: string[] = positionString.split('/');
+   const board: string[][] = [];
+
+   for (const positionRank of position) {
+      const boardRank: string[] = [];
+
+      for (const char of positionRank) {
+         const numberOfEmptyCells = Number(char);
+
+         if (isFinite(numberOfEmptyCells)) {
+            const emptyCells: string[] = new Array(numberOfEmptyCells).fill('');
+            boardRank.push(...emptyCells);
+         } else {
+            boardRank.push(char);
+         }
+      }
+
+      board.push(boardRank);
+   }
+
+   return board;
+} 
+
 export default function Board() {
+   const position = useAppSelector(selectPosition);
+   const board: string[][] = generatePosition(position);
+
    return (
       <S.Board>
          {
-            ranks.map((rank, idxRank) => (
-               files.map((file, idxFile) => (
-                  <S.Cell 
+            board.map((rank, rankIdx) => (
+               rank.map((piece, fileIdx) => (
+                  <S.Cell
+                     key={rankIdx * FILES + fileIdx}
                      style={{
-                        backgroundColor: isBlack(idxRank, idxFile) ? 
-                           `${svar.clrCellBlack}` : 
+                        background: isBlack(rankIdx, fileIdx) ?
+                           `${svar.clrCellBlack}` :
                            `${svar.clrCellWhite}`,
-                        color: isBlack(idxRank, idxFile) ? 
+                        color: isBlack(rankIdx, fileIdx) ?
                            `${svar.clrCellWhite}` :
-                           `${svar.clrCellBlack}`,
-                     }} 
-                     key={idxRank * 8 + idxFile}
+                           `${svar.clrCellBlack}`
+                     }}
                   >
-                     <S.RankMark>{idxFile === 7 && rank}</S.RankMark>
-                     <S.FileMark>{idxRank === 7 && file}</S.FileMark>
+                     <S.RankMark>{fileIdx === FILES - 1 && rankIdx + 1}</S.RankMark>
+                     <S.FileMark>{rankIdx === RANKS - 1 && files[fileIdx]}</S.FileMark>
+                     {
+                        piece !== '' && <S.Piece src={pieces[piece]} />
+                     }
                   </S.Cell>
                ))
             ))

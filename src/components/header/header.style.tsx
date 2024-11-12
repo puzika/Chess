@@ -15,6 +15,7 @@ export const Header = styled.div`
    height: inherit;
    background-color: ${svar.clrPrimary};
    padding: 0 5rem;
+   z-index: 10;
 `;
 
 export const HeaderTitle = styled.h1`

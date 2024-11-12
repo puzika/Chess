@@ -1,4 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
+import type { RootState } from "../../store/store";
 
 type BoardState = {
    position: string,
@@ -24,4 +25,5 @@ export const boardSlice = createSlice({
    reducers: {}
 });
 
-
+export const selectPosition = (state: RootState): string => state.board.position;
+export default boardSlice.reducer;

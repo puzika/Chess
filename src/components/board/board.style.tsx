@@ -11,6 +11,7 @@ export const Board = styled.div`
 export const Cell = styled.div`
    position: relative;
    aspect-ratio: 1;
+   padding: .5rem;
 `;
 
 export const RankMark = styled.span`
@@ -23,4 +24,9 @@ export const FileMark = styled.span`
    position: absolute;
    bottom: .5rem;
    left: .5rem;
+`;
+
+export const Piece = styled.img`
+   display: block;
+   width: 100%;
 `
