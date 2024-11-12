@@ -1,3 +1,4 @@
+import { useEffect, useRef, DragEvent } from 'react';
 import { useAppSelector } from '../../store/hooks';
 import { selectPosition } from './board.slice';
 import WhiteKing from '../../assets/king-w.svg';
@@ -65,17 +66,36 @@ const generatePosition = (positionString: string): string[][] => {
    }
 
    return board;
-} 
+}
 
 export default function Board() {
+   const pieceRefs = useRef<HTMLImageElement[]>([]);
    const position = useAppSelector(selectPosition);
    const board: string[][] = generatePosition(position);
+   let dragged: HTMLImageElement | null = null;
+
+   const dragStart = (e: DragEvent<HTMLImageElement>): void => {
+      dragged = e.target as HTMLImageElement;
+   }
+
+   const dragOver = (e: DragEvent<HTMLDivElement>): void => {
+      e.preventDefault();
+   } 
+
+   const drop = (e: DragEvent<HTMLDivElement>): void => {
+      console.log(e.currentTarget);
+
+      if (!e.currentTarget.classList.contains('cell')) return;
+
+      dragged!.remove();
+      e.currentTarget.appendChild(dragged!);
+   }
 
    return (
       <S.Board>
          {
-            board.map((rank, rankIdx) => (
-               rank.map((piece, fileIdx) => (
+            board.map((rank: string[], rankIdx: number): JSX.Element[] => (
+               rank.map((piece: string, fileIdx: number): JSX.Element => (
                   <S.Cell
                      key={rankIdx * FILES + fileIdx}
                      style={{
@@ -86,11 +106,18 @@ export default function Board() {
                            `${svar.clrCellWhite}` :
                            `${svar.clrCellBlack}`
                      }}
+                     className='cell'
+                     onDragOver={dragOver}
+                     onDrop={drop}
                   >
                      <S.RankMark>{fileIdx === FILES - 1 && rankIdx + 1}</S.RankMark>
                      <S.FileMark>{rankIdx === RANKS - 1 && files[fileIdx]}</S.FileMark>
                      {
-                        piece !== '' && <S.Piece src={pieces[piece]} />
+                        piece !== '' && 
+                           <S.Piece 
+                              src={pieces[piece]} 
+                              onDragStart={dragStart}
+                              />
                      }
                   </S.Cell>
                ))
