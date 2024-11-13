@@ -1,6 +1,7 @@
-import { useEffect, useRef, DragEvent } from 'react';
-import { useAppSelector } from '../../store/hooks';
-import { selectPosition } from './board.slice';
+import { DragEvent } from 'react';
+import { useAppSelector, useAppDispatch } from '../../store/hooks';
+import { selectPosition, move } from './board.slice';
+import type { Coords } from './board.slice';
 import WhiteKing from '../../assets/king-w.svg';
 import WhiteQueen from '../../assets/queen-w.svg';
 import WhiteRook from '../../assets/rook-w.svg';
@@ -69,13 +70,21 @@ const generatePosition = (positionString: string): string[][] => {
 }
 
 export default function Board() {
-   const pieceRefs = useRef<HTMLImageElement[]>([]);
+   const dispatch = useAppDispatch();
    const position = useAppSelector(selectPosition);
    const board: string[][] = generatePosition(position);
+   
    let dragged: HTMLImageElement | null = null;
+   const originCoords: Coords = { row: -1, col: -1 };
+   const targetCoords: Coords = { row: -1, col: -1 };
 
    const dragStart = (e: DragEvent<HTMLImageElement>): void => {
-      dragged = e.target as HTMLImageElement;
+      dragged = e.currentTarget;
+      
+      const cell = e.currentTarget.parentElement as HTMLDivElement;
+      
+      originCoords.row = Number(cell.dataset.row);
+      originCoords.col = Number(cell.dataset.col);
    }
 
    const dragOver = (e: DragEvent<HTMLDivElement>): void => {
@@ -83,12 +92,17 @@ export default function Board() {
    } 
 
    const drop = (e: DragEvent<HTMLDivElement>): void => {
-      console.log(e.currentTarget);
-
       if (!e.currentTarget.classList.contains('cell')) return;
 
+      const cell = e.currentTarget as HTMLDivElement;
+
       dragged!.remove();
-      e.currentTarget.appendChild(dragged!);
+      cell.appendChild(dragged!);
+
+      targetCoords.row = Number(cell.dataset.row);
+      targetCoords.col = Number(cell.dataset.col);
+
+      dispatch(move(originCoords, targetCoords));
    }
 
    return (
@@ -98,6 +112,8 @@ export default function Board() {
                rank.map((piece: string, fileIdx: number): JSX.Element => (
                   <S.Cell
                      key={rankIdx * FILES + fileIdx}
+                     data-col = {`${fileIdx}`}
+                     data-row = {`${rankIdx}`}
                      style={{
                         background: isBlack(rankIdx, fileIdx) ?
                            `${svar.clrCellBlack}` :

@@ -29,4 +29,5 @@ export const FileMark = styled.span`
 export const Piece = styled.img`
    display: block;
    width: 100%;
+   cursor: pointer;
 `

@@ -1,9 +1,11 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import type { RootState } from "../../store/store";
+
+type Turn = 'w' | 'b';
 
 type BoardState = {
    position: string,
-   turn: string,
+   turn: Turn,
    castling: string,
    enpassant: string,
    halfmove: number,
@@ -17,13 +19,36 @@ const initialState: BoardState = {
    enpassant: '-',
    halfmove: 0,
    fullmove: 1,
+};
+
+export type Coords = {
+   row: number,
+   col: number,
 }
 
 export const boardSlice = createSlice({
    name: 'board',
    initialState,
-   reducers: {}
+   reducers: {
+      move: {
+         reducer(state, action: PayloadAction<{origin: Coords, target: Coords}>) {
+            console.log(action.payload);
+         },
+
+         prepare(origin: Coords, target: Coords) {
+            return {
+               payload: {
+                  origin,
+                  target
+               }
+            }
+         }
+      }
+   }
 });
 
+export const { move } = boardSlice.actions;
+
 export const selectPosition = (state: RootState): string => state.board.position;
+
 export default boardSlice.reducer;
