@@ -96,13 +96,10 @@ export default function Board() {
 
       const cell = e.currentTarget as HTMLDivElement;
 
-      dragged!.remove();
-      cell.appendChild(dragged!);
-
       targetCoords.row = Number(cell.dataset.row);
       targetCoords.col = Number(cell.dataset.col);
 
-      dispatch(move(originCoords, targetCoords));
+      dispatch(move(originCoords, targetCoords, board));
    }
 
    return (

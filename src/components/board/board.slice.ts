@@ -26,21 +26,50 @@ export type Coords = {
    col: number,
 }
 
+function generateFenPositionFromBoard(board: string[][]): string {
+   const fenArray: string[] = [];
+
+   for (const row of board) {
+      let rank: string = '';
+      let countEmptyCells = 0;
+
+      for (let i = 0; i < row.length; i++) {
+         if (row[i] === '') countEmptyCells++;
+         else {
+            if (countEmptyCells !== 0) {
+               rank += `${countEmptyCells}`;
+               countEmptyCells = 0;
+            }
+
+            rank += row[i];
+         }
+      }
+
+      if (!!countEmptyCells) rank += `${countEmptyCells}`;
+
+      fenArray.push(rank);
+   }
+
+   return fenArray.join('/');
+}
+
 export const boardSlice = createSlice({
    name: 'board',
    initialState,
    reducers: {
       move: {
-         reducer(state, action: PayloadAction<{origin: Coords, target: Coords}>) {
-            console.log(action.payload);
+         reducer(state, action: PayloadAction<string>) {
+            state.position = action.payload;
          },
 
-         prepare(origin: Coords, target: Coords) {
+         prepare(origin: Coords, target: Coords, board: string[][]): { payload: string } {
+            board[target.row][target.col] = board[origin.row][origin.col];
+            board[origin.row][origin.col] = '';
+
+            const fenPosition: string = generateFenPositionFromBoard(board);
+
             return {
-               payload: {
-                  origin,
-                  target
-               }
+               payload: fenPosition,
             }
          }
       }
