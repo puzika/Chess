@@ -1,6 +1,6 @@
 import { DragEvent } from 'react';
 import { useAppSelector, useAppDispatch } from '../../store/hooks';
-import { selectPosition, move } from './board.slice';
+import { selectPosition, selectCastling, selectEnpassant, selectTurn, selectHalfMove, selectFullMove, move } from './board.slice';
 import type { Coords } from './board.slice';
 import WhiteKing from '../../assets/king-w.svg';
 import WhiteQueen from '../../assets/queen-w.svg';
@@ -71,7 +71,15 @@ const generatePosition = (positionString: string): string[][] => {
 
 export default function Board() {
    const dispatch = useAppDispatch();
-   const position = useAppSelector(selectPosition);
+   const position: string = useAppSelector(selectPosition);
+   const turn = useAppSelector(selectTurn);
+   const castling = useAppSelector(selectCastling);
+   const enpassant = useAppSelector(selectEnpassant);
+   const halfmove = useAppSelector(selectHalfMove);
+   const fullmove = useAppSelector(selectFullMove);
+
+   console.log(position, turn, castling, enpassant, halfmove, fullmove);
+
    const board: string[][] = generatePosition(position);
    
    let dragged: HTMLImageElement | null = null;
@@ -98,6 +106,8 @@ export default function Board() {
 
       targetCoords.row = Number(cell.dataset.row);
       targetCoords.col = Number(cell.dataset.col);
+
+      if (targetCoords.row === originCoords.row && targetCoords.col === originCoords.col) return;
 
       dispatch(move(originCoords, targetCoords, board));
    }

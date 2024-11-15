@@ -1,11 +1,12 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import type { RootState } from "../../store/store";
 
-type Turn = 'w' | 'b';
+export type Color = 'w' | 'b';
+export type Piece = 'r' | 'n' | 'b' | 'q' | 'k' | 'p' | 'R' | 'N' | 'B' | 'Q' | 'K' | 'P';
 
 type BoardState = {
    position: string,
-   turn: Turn,
+   turn: Color,
    castling: string,
    enpassant: string,
    halfmove: number,
@@ -24,6 +25,14 @@ const initialState: BoardState = {
 export type Coords = {
    row: number,
    col: number,
+}
+
+type MovePayload = {
+   position: string,
+   piece: Piece,
+   origin: Coords,
+   target: Coords,
+   captured: Piece | '',
 }
 
 function generateFenPositionFromBoard(board: string[][]): string {
@@ -53,23 +62,91 @@ function generateFenPositionFromBoard(board: string[][]): string {
    return fenArray.join('/');
 }
 
+function setCastling(currentCastling: string, piece: Piece, origin: Coords, target: Coords, captured: Piece | ''): string {
+   let castling: string = '';
+
+   console.log(captured, target.row === 7 && target.col === 0);
+
+   if (captured === 'R') {
+      if (target.row === 7 && target.col === 0) castling = currentCastling.replace('Q', '');
+      if (target.row === 7 && target.col === 7) castling = currentCastling.replace('K', '');
+   }
+
+   if (captured === 'r') {
+      if (target.row === 0 && target.col === 0) castling = currentCastling.replace('q', '');
+      if (target.row === 0 && target.col === 7) castling = currentCastling.replace('k', '');
+   }
+
+   switch (piece) {
+      case 'K': 
+         castling = currentCastling.replace('K', '');
+         castling = castling.replace('Q', '');
+         break;
+      case 'k':
+         castling = currentCastling.replace('k', '');
+         castling = castling.replace('q', '');
+         break;
+      case 'R':
+         if (origin.col === 0) castling = currentCastling.replace('Q', '');
+         if (origin.col === 7) castling = currentCastling.replace('K', '');
+
+         break;
+      case 'r':
+         if (origin.col === 0) castling = currentCastling.replace('q', '');
+         if (origin.col === 7) castling = currentCastling.replace('k', '');
+
+         break;
+   }
+
+   if (castling === '') castling = '-';
+
+   return castling;
+}
+
 export const boardSlice = createSlice({
    name: 'board',
    initialState,
    reducers: {
       move: {
-         reducer(state, action: PayloadAction<string>) {
-            state.position = action.payload;
+         reducer(state, action: PayloadAction<MovePayload>) {
+            const { position, piece, target, origin, captured } = action.payload;
+
+            const files: string[] = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+
+            if ((piece === 'P' || piece === 'p') && Math.abs(target.row - origin.row) === 2) {
+               const rank: string = state.turn === 'w' ? '6' : '3';
+               const file: string = files[target.col];
+
+               state.enpassant = `${file}${rank}`;
+            } else {
+               state.enpassant = '-';
+            }
+
+            if (state.turn === 'b') state.fullmove += 1;
+
+            if (state.castling !== '-') state.castling = setCastling(state.castling, piece, origin, target, captured);
+            
+            state.position = position; 
+            state.turn = state.turn === 'w' ? 'b' : 'w';
+            state.halfmove = !!captured || piece === 'p' || piece === 'P' ? 0 : state.halfmove + 1;
          },
 
-         prepare(origin: Coords, target: Coords, board: string[][]): { payload: string } {
+         prepare(origin: Coords, target: Coords, board: string[][]): { payload: MovePayload } {
+            const captured = board[target.row][target.col] as Piece | '';
+
             board[target.row][target.col] = board[origin.row][origin.col];
             board[origin.row][origin.col] = '';
 
             const fenPosition: string = generateFenPositionFromBoard(board);
 
             return {
-               payload: fenPosition,
+               payload: {
+                  position: fenPosition,
+                  piece: board[target.row][target.col] as Piece,
+                  origin,
+                  target,
+                  captured
+               }
             }
          }
       }
@@ -79,5 +156,10 @@ export const boardSlice = createSlice({
 export const { move } = boardSlice.actions;
 
 export const selectPosition = (state: RootState): string => state.board.position;
+export const selectTurn = (state: RootState): Color => state.board.turn;
+export const selectCastling = (state: RootState): string => state.board.castling;
+export const selectEnpassant = (state: RootState): string => state.board.enpassant;
+export const selectHalfMove = (state: RootState): number => state.board.halfmove;
+export const selectFullMove = (state: RootState): number => state.board.fullmove;
 
 export default boardSlice.reducer;
