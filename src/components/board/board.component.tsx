@@ -41,7 +41,7 @@ const pieces: Pieces = {
    'p': BlackPawn,
 }
 
-const isBlack = (rankIdx: number, fileIdx: number): boolean => {
+const isCellBlack = (rankIdx: number, fileIdx: number): boolean => {
    return (rankIdx % 2 === 0 && fileIdx % 2 !== 0) || (rankIdx % 2 !== 0 && fileIdx % 2 === 0);
 }
 
@@ -73,7 +73,7 @@ const draggable = (piece: Piece, turn: Color): boolean => {
       const color: Color = piece.toLowerCase() === piece ? 'b' : 'w';
 
       return color === turn;
-   }
+}
 
 const resetCoords = (...coords: Coords[]): void => {
    coords.forEach(c => {
@@ -121,6 +121,40 @@ export default function Board() {
       resetCoords(originCoords, targetCoords);
    }
 
+   const handleClickPiece = (e: MouseEvent<HTMLImageElement>): void => {
+      const cell = e.currentTarget.parentElement as HTMLDivElement;
+      const row: number = Number(cell.dataset.row);
+      const col: number = Number(cell.dataset.col);
+
+      const color: Color = board[row][col].toLowerCase() === board[row][col] ? 'b' : 'w';
+
+      if (color !== turn) return;
+
+      originCoords.row = row;
+      originCoords.col = col;
+   }
+
+   const handleClickCell = (e: MouseEvent<HTMLDivElement>): void => {
+      if (originCoords.row === -1 && originCoords.col === -1) return;
+
+      const cell = e.currentTarget.closest('.cell') as HTMLDivElement;
+      const row: number = Number(cell.dataset.row); 
+      const col: number = Number(cell.dataset.col);
+      
+      if (board[row][col] !== '') {
+         const color: Color = board[row][col].toLowerCase() === board[row][col] ? 'b' : 'w';
+
+         if (turn === color) return;
+      }
+
+      targetCoords.row = row;
+      targetCoords.col = col;
+
+      dispatch(move(originCoords, targetCoords, board))
+
+      resetCoords(originCoords, targetCoords);
+   }
+
    return (
       <S.Board>
          {
@@ -131,16 +165,17 @@ export default function Board() {
                      data-col = {`${fileIdx}`}
                      data-row = {`${rankIdx}`}
                      style={{
-                        background: isBlack(rankIdx, fileIdx) ?
+                        background: isCellBlack(rankIdx, fileIdx) ?
                            `${svar.clrCellBlack}` :
                            `${svar.clrCellWhite}`,
-                        color: isBlack(rankIdx, fileIdx) ?
+                        color: isCellBlack(rankIdx, fileIdx) ?
                            `${svar.clrCellWhite}` :
                            `${svar.clrCellBlack}`
                      }}
                      className='cell'
                      onDragOver={handleDragOver}
                      onDrop={handleDrop}
+                     onClick={handleClickCell}
                   >
                      <S.RankMark>{fileIdx === FILES - 1 && rankIdx + 1}</S.RankMark>
                      <S.FileMark>{rankIdx === RANKS - 1 && files[fileIdx]}</S.FileMark>
@@ -150,7 +185,8 @@ export default function Board() {
                               draggable={draggable(piece as Piece, turn)}
                               src={pieces[piece]} 
                               onDragStart={handleDragStart}
-                              />
+                              onClick={handleClickPiece}
+                           />
                      }
                   </S.Cell>
                ))
