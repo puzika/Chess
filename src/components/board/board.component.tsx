@@ -1,7 +1,7 @@
-import { DragEvent } from 'react';
+import { DragEvent, MouseEvent } from 'react';
 import { useAppSelector, useAppDispatch } from '../../store/hooks';
-import { selectPosition, selectCastling, selectEnpassant, selectTurn, selectHalfMove, selectFullMove, move } from './board.slice';
-import type { Coords } from './board.slice';
+import { selectPosition, selectTurn, move } from './board.slice';
+import type { Color, Coords, Piece } from './board.slice';
 import WhiteKing from '../../assets/king-w.svg';
 import WhiteQueen from '../../assets/queen-w.svg';
 import WhiteRook from '../../assets/rook-w.svg';
@@ -69,37 +69,41 @@ const generatePosition = (positionString: string): string[][] => {
    return board;
 }
 
+const draggable = (piece: Piece, turn: Color): boolean => {
+      const color: Color = piece.toLowerCase() === piece ? 'b' : 'w';
+
+      return color === turn;
+   }
+
+const resetCoords = (...coords: Coords[]): void => {
+   coords.forEach(c => {
+      c.row = -1;
+      c.col = -1;
+   })
+}
+
 export default function Board() {
    const dispatch = useAppDispatch();
    const position: string = useAppSelector(selectPosition);
    const turn = useAppSelector(selectTurn);
-   const castling = useAppSelector(selectCastling);
-   const enpassant = useAppSelector(selectEnpassant);
-   const halfmove = useAppSelector(selectHalfMove);
-   const fullmove = useAppSelector(selectFullMove);
-
-   console.log(position, turn, castling, enpassant, halfmove, fullmove);
 
    const board: string[][] = generatePosition(position);
    
-   let dragged: HTMLImageElement | null = null;
    const originCoords: Coords = { row: -1, col: -1 };
    const targetCoords: Coords = { row: -1, col: -1 };
 
-   const dragStart = (e: DragEvent<HTMLImageElement>): void => {
-      dragged = e.currentTarget;
-      
+   const handleDragStart = (e: DragEvent<HTMLImageElement>): void => {
       const cell = e.currentTarget.parentElement as HTMLDivElement;
       
       originCoords.row = Number(cell.dataset.row);
       originCoords.col = Number(cell.dataset.col);
    }
 
-   const dragOver = (e: DragEvent<HTMLDivElement>): void => {
+   const handleDragOver = (e: DragEvent<HTMLDivElement>): void => {
       e.preventDefault();
    } 
 
-   const drop = (e: DragEvent<HTMLDivElement>): void => {
+   const handleDrop = (e: DragEvent<HTMLDivElement>): void => {
       if (!e.currentTarget.classList.contains('cell')) return;
 
       const cell = e.currentTarget as HTMLDivElement;
@@ -107,9 +111,14 @@ export default function Board() {
       targetCoords.row = Number(cell.dataset.row);
       targetCoords.col = Number(cell.dataset.col);
 
-      if (targetCoords.row === originCoords.row && targetCoords.col === originCoords.col) return;
+      if (targetCoords.row === originCoords.row && targetCoords.col === originCoords.col) {
+         resetCoords(originCoords, targetCoords);
+         return;
+      }
 
       dispatch(move(originCoords, targetCoords, board));
+
+      resetCoords(originCoords, targetCoords);
    }
 
    return (
@@ -130,16 +139,17 @@ export default function Board() {
                            `${svar.clrCellBlack}`
                      }}
                      className='cell'
-                     onDragOver={dragOver}
-                     onDrop={drop}
+                     onDragOver={handleDragOver}
+                     onDrop={handleDrop}
                   >
                      <S.RankMark>{fileIdx === FILES - 1 && rankIdx + 1}</S.RankMark>
                      <S.FileMark>{rankIdx === RANKS - 1 && files[fileIdx]}</S.FileMark>
                      {
                         piece !== '' && 
                            <S.Piece 
+                              draggable={draggable(piece as Piece, turn)}
                               src={pieces[piece]} 
-                              onDragStart={dragStart}
+                              onDragStart={handleDragStart}
                               />
                      }
                   </S.Cell>

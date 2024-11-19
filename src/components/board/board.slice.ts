@@ -65,8 +65,6 @@ function generateFenPositionFromBoard(board: string[][]): string {
 function setCastling(currentCastling: string, piece: Piece, origin: Coords, target: Coords, captured: Piece | ''): string {
    let castling: string = '';
 
-   console.log(captured, target.row === 7 && target.col === 0);
-
    if (captured === 'R') {
       if (target.row === 7 && target.col === 0) castling = currentCastling.replace('Q', '');
       if (target.row === 7 && target.col === 7) castling = currentCastling.replace('K', '');
