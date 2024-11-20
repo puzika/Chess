@@ -2,18 +2,8 @@ import { DragEvent, MouseEvent } from 'react';
 import { useAppSelector, useAppDispatch } from '../../store/hooks';
 import { selectPosition, selectTurn, move } from './board.slice';
 import type { Color, Coords, Piece } from './board.slice';
-import WhiteKing from '../../assets/king-w.svg';
-import WhiteQueen from '../../assets/queen-w.svg';
-import WhiteRook from '../../assets/rook-w.svg';
-import WhiteBishop from '../../assets/bishop-w.svg';
-import WhiteKnight from '../../assets/knight-w.svg';
-import WhitePawn from '../../assets/pawn-w.svg';
-import BlackKing from '../../assets/king-b.svg';
-import BlackQueen from '../../assets/queen-b.svg';
-import BlackRook from '../../assets/rook-b.svg';
-import BlackBishop from '../../assets/bishop-b.svg';
-import BlackKnight from '../../assets/knight-b.svg';
-import BlackPawn from '../../assets/pawn-b.svg';
+import { pieces } from '../../pieces/pieces.images';
+import { getLegalMoves } from '../../pieces/pieces.moves';
 import * as S from './board.style';
 import * as svar from '../../variables.style';
 
@@ -21,25 +11,6 @@ const RANKS: number = 8;
 const FILES: number = 8;
 
 const files: string[] = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
-
-interface Pieces {
-   [key: string]: string,
-}
-
-const pieces: Pieces = {
-   'K': WhiteKing,
-   'Q': WhiteQueen,
-   'R': WhiteRook,
-   'B': WhiteBishop,
-   'N': WhiteKnight,
-   'P': WhitePawn,
-   'k': BlackKing,
-   'q': BlackQueen,
-   'r': BlackRook,
-   'b': BlackBishop,
-   'n': BlackKnight,
-   'p': BlackPawn,
-}
 
 const isCellBlack = (rankIdx: number, fileIdx: number): boolean => {
    return (rankIdx % 2 === 0 && fileIdx % 2 !== 0) || (rankIdx % 2 !== 0 && fileIdx % 2 === 0);
@@ -86,8 +57,8 @@ export default function Board() {
    const dispatch = useAppDispatch();
    const position: string = useAppSelector(selectPosition);
    const turn = useAppSelector(selectTurn);
-
    const board: string[][] = generatePosition(position);
+   const legalMoves: Map<number, Coords[]> = getLegalMoves(board, turn);
    
    const originCoords: Coords = { row: -1, col: -1 };
    const targetCoords: Coords = { row: -1, col: -1 };
@@ -97,6 +68,8 @@ export default function Board() {
       
       originCoords.row = Number(cell.dataset.row);
       originCoords.col = Number(cell.dataset.col);
+
+      console.log(legalMoves);
    }
 
    const handleDragOver = (e: DragEvent<HTMLDivElement>): void => {
