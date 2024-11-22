@@ -53,6 +53,52 @@ const resetCoords = (...coords: Coords[]): void => {
    })
 }
 
+const addHighlight = (elem: HTMLDivElement): void => {
+   elem.style.boxShadow = `inset 0 0 2rem ${svar.clrHighlight}`;
+}
+
+const removeHighlight = (elem: HTMLDivElement): void => {
+   elem.style.boxShadow = 'none';
+}
+
+const highlightHover = (elem: HTMLDivElement): void => {
+   elem.style.backgroundImage = `linear-gradient(135deg, ${svar.clrHighlightTransparent} 0 50%, ${svar.clrHighlightTransparent} 50% 100%)`;
+}
+
+const removeHover = (elem: HTMLDivElement): void => {
+   elem.style.backgroundImage = 'none';
+}
+
+const highlightMoves = (cell: Coords, legalMoves: Map<number, Coords[]>): void => {
+   const idx: number = cell.row * RANKS + cell.col;
+   const moves: Coords[] = legalMoves.get(idx) ?? [];
+
+   moves.forEach(c => {
+      const elem = document.querySelector(`[data-col="${c.col}"][data-row="${c.row}"]`) as HTMLDivElement;
+      addHighlight(elem);
+   });
+}
+
+const hideMoves = (cell: Coords, legalMoves: Map<number, Coords[]>): void => {
+   const idx: number = cell.row * RANKS + cell.col;
+   const moves: Coords[] = legalMoves.get(idx) ?? [];
+
+   moves.forEach(c => {
+      const elem = document.querySelector(`[data-col="${c.col}"][data-row="${c.row}"]`) as HTMLDivElement;
+      removeHighlight(elem);
+   });
+}
+
+const canDrop = (target: Coords, moves: Coords[]): boolean => {
+   for (const coord of moves) {
+      if (coord.row === target.row && coord.col === target.col) return true;
+   }
+
+   resetCoords(target);
+
+   return false;
+}
+
 export default function Board() {
    const dispatch = useAppDispatch();
    const position: string = useAppSelector(selectPosition);
@@ -65,11 +111,13 @@ export default function Board() {
 
    const handleDragStart = (e: DragEvent<HTMLImageElement>): void => {
       const cell = e.currentTarget.parentElement as HTMLDivElement;
+
+      if (originCoords.row !== -1 && originCoords.col !== -1) hideMoves(originCoords, legalMoves);
       
       originCoords.row = Number(cell.dataset.row);
       originCoords.col = Number(cell.dataset.col);
 
-      console.log(legalMoves);
+      highlightMoves(originCoords, legalMoves);
    }
 
    const handleDragOver = (e: DragEvent<HTMLDivElement>): void => {
@@ -84,14 +132,31 @@ export default function Board() {
       targetCoords.row = Number(cell.dataset.row);
       targetCoords.col = Number(cell.dataset.col);
 
-      if (targetCoords.row === originCoords.row && targetCoords.col === originCoords.col) {
-         resetCoords(originCoords, targetCoords);
-         return;
-      }
+      const moves: Coords[] = legalMoves.get(originCoords.row * RANKS + originCoords.col) ?? [];
 
+      if (!canDrop(targetCoords, moves)) return;
+
+      hideMoves(originCoords, legalMoves);
       dispatch(move(originCoords, targetCoords, board));
-
       resetCoords(originCoords, targetCoords);
+   }
+
+   const handleDragEnter = (e: DragEvent<HTMLDivElement>): void => {
+      const cell = e.currentTarget as HTMLDivElement;
+
+      const row: number = Number(cell.dataset.row);
+      const col: number = Number(cell.dataset.col);
+
+      const moves: Coords[] = legalMoves.get(originCoords.row * RANKS + originCoords.col) ?? [];
+
+      if (!canDrop({ row, col }, moves)) return;
+      
+      highlightHover(cell);
+   }
+
+   const handleDragLeave = (e: DragEvent<HTMLDivElement>): void => {
+      const cell = e.currentTarget as HTMLDivElement;
+      removeHover(cell);
    }
 
    const handleClickPiece = (e: MouseEvent<HTMLImageElement>): void => {
@@ -103,29 +168,46 @@ export default function Board() {
 
       if (color !== turn) return;
 
+      if (originCoords.row !== -1 && originCoords.col !== -1) hideMoves(originCoords, legalMoves);
+
       originCoords.row = row;
       originCoords.col = col;
+
+      highlightMoves(originCoords, legalMoves);
    }
 
    const handleClickCell = (e: MouseEvent<HTMLDivElement>): void => {
       if (originCoords.row === -1 && originCoords.col === -1) return;
 
       const cell = e.currentTarget.closest('.cell') as HTMLDivElement;
-      const row: number = Number(cell.dataset.row); 
-      const col: number = Number(cell.dataset.col);
+      targetCoords.row = Number(cell.dataset.row)
+      targetCoords.col = Number(cell.dataset.col);
       
-      if (board[row][col] !== '') {
-         const color: Color = board[row][col].toLowerCase() === board[row][col] ? 'b' : 'w';
+      const moves: Coords[] = legalMoves.get(originCoords.row * RANKS + originCoords.col) ?? [];
 
-         if (turn === color) return;
-      }
+      if (!canDrop(targetCoords, moves)) return;
 
-      targetCoords.row = row;
-      targetCoords.col = col;
-
+      hideMoves(originCoords, legalMoves);
       dispatch(move(originCoords, targetCoords, board))
-
       resetCoords(originCoords, targetCoords);
+   }
+
+   const handleMouseEnter = (e: MouseEvent<HTMLDivElement>): void => {
+      const cell = e.currentTarget as HTMLDivElement;
+
+      const row: number = Number(cell.dataset.row);
+      const col: number = Number(cell.dataset.col);
+
+      const moves: Coords[] = legalMoves.get(originCoords.row * RANKS + originCoords.col) ?? [];
+
+      if (!canDrop({ row, col }, moves)) return;
+      
+      highlightHover(cell);
+   }
+
+   const handleMouseLeave = (e: MouseEvent<HTMLDivElement>): void => {
+      const cell = e.currentTarget as HTMLDivElement;
+      removeHover(cell);
    }
 
    return (
@@ -148,7 +230,11 @@ export default function Board() {
                      className='cell'
                      onDragOver={handleDragOver}
                      onDrop={handleDrop}
+                     onDragEnter={handleDragEnter}
+                     onDragLeave={handleDragLeave}
                      onClick={handleClickCell}
+                     onMouseEnter={handleMouseEnter}
+                     onMouseLeave={handleMouseLeave}
                   >
                      <S.RankMark>{fileIdx === FILES - 1 && rankIdx + 1}</S.RankMark>
                      <S.FileMark>{rankIdx === RANKS - 1 && files[fileIdx]}</S.FileMark>

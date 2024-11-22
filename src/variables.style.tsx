@@ -8,3 +8,6 @@ export const clrNeutralMax = '#fff';
 
 export const clrCellWhite = '#2d2d2d';
 export const clrCellBlack = '#161616';
+
+export const clrHighlight = '#29569e';
+export const clrHighlightTransparent = '#29569e70';

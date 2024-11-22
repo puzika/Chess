@@ -12,6 +12,7 @@ export const Cell = styled.div`
    position: relative;
    aspect-ratio: 1;
    padding: .5rem;
+   transition: box-shadow .15s;
 `;
 
 export const RankMark = styled.span`
