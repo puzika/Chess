@@ -138,25 +138,29 @@ export default function Board() {
       if (!canDrop(targetCoords, moves)) return;
 
       hideMoves(originCoords, legalMoves);
+      removeHover(cell);
       dispatch(move(originCoords, targetCoords, board));
       resetCoords(originCoords, targetCoords);
    }
 
    const handleDragEnter = (e: DragEvent<HTMLDivElement>): void => {
-      const cell = e.currentTarget as HTMLDivElement;
+      const cell = e.currentTarget.closest('.cell') as HTMLDivElement;
 
       const row: number = Number(cell.dataset.row);
       const col: number = Number(cell.dataset.col);
 
       const moves: Coords[] = legalMoves.get(originCoords.row * RANKS + originCoords.col) ?? [];
 
-      if (!canDrop({ row, col }, moves)) return;
+      if (moves.length === 0 || !canDrop({ row, col }, moves)) return;
       
       addHover(cell);
    }
 
    const handleDragLeave = (e: DragEvent<HTMLDivElement>): void => {
       const cell = e.currentTarget as HTMLDivElement;
+
+      if (cell.contains(e.relatedTarget as Node | null)) return;
+
       removeHover(cell);
    }
 
@@ -189,6 +193,7 @@ export default function Board() {
       if (!canDrop(targetCoords, moves)) return;
 
       hideMoves(originCoords, legalMoves);
+      removeHover(cell);
       dispatch(move(originCoords, targetCoords, board))
       resetCoords(originCoords, targetCoords);
    }
@@ -201,13 +206,16 @@ export default function Board() {
 
       const moves: Coords[] = legalMoves.get(originCoords.row * RANKS + originCoords.col) ?? [];
 
-      if (!canDrop({ row, col }, moves)) return;
-      
+      if (moves.length === 0 || !canDrop({ row, col }, moves)) return;
+
       addHover(cell);
    }
 
    const handleMouseLeave = (e: MouseEvent<HTMLDivElement>): void => {
+      if (originCoords.row === -1 && originCoords.col === -1) return;
+   
       const cell = e.currentTarget as HTMLDivElement;
+
       removeHover(cell);
    }
 
