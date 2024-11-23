@@ -54,14 +54,15 @@ const resetCoords = (...coords: Coords[]): void => {
 }
 
 const addHighlight = (elem: HTMLDivElement): void => {
-   elem.style.boxShadow = `inset 0 0 2rem ${svar.clrHighlight}`;
+   if (!!elem.querySelector('.piece')) elem.style.boxShadow = `inset 0 0 2rem ${svar.clrNeutralMax}`;
+   else elem.style.boxShadow = `inset 0 0 2rem ${svar.clrHighlight}`;
 }
 
 const removeHighlight = (elem: HTMLDivElement): void => {
    elem.style.boxShadow = 'none';
 }
 
-const highlightHover = (elem: HTMLDivElement): void => {
+const addHover = (elem: HTMLDivElement): void => {
    elem.style.backgroundImage = `linear-gradient(135deg, ${svar.clrHighlightTransparent} 0 50%, ${svar.clrHighlightTransparent} 50% 100%)`;
 }
 
@@ -151,7 +152,7 @@ export default function Board() {
 
       if (!canDrop({ row, col }, moves)) return;
       
-      highlightHover(cell);
+      addHover(cell);
    }
 
    const handleDragLeave = (e: DragEvent<HTMLDivElement>): void => {
@@ -202,7 +203,7 @@ export default function Board() {
 
       if (!canDrop({ row, col }, moves)) return;
       
-      highlightHover(cell);
+      addHover(cell);
    }
 
    const handleMouseLeave = (e: MouseEvent<HTMLDivElement>): void => {
@@ -236,11 +237,12 @@ export default function Board() {
                      onMouseEnter={handleMouseEnter}
                      onMouseLeave={handleMouseLeave}
                   >
-                     <S.RankMark>{fileIdx === FILES - 1 && rankIdx + 1}</S.RankMark>
-                     <S.FileMark>{rankIdx === RANKS - 1 && files[fileIdx]}</S.FileMark>
+                     {fileIdx === FILES - 1 && <S.RankMark>{rankIdx + 1}</S.RankMark>}
+                     {rankIdx === RANKS - 1 && <S.FileMark>{files[fileIdx]}</S.FileMark>}
                      {
                         piece !== '' && 
                            <S.Piece 
+                              className='piece'
                               draggable={draggable(piece as Piece, turn)}
                               src={pieces[piece]} 
                               onDragStart={handleDragStart}
