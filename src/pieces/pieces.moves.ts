@@ -14,61 +14,7 @@ const getPieceColor = (piece: Piece): Color => {
 }
 
 const getMovesPawn = (origin: Coords, board: string[][]): Coords[] => {
-   const moves: Coords[] = [];
-   const pieceColor: Color = getPieceColor(board[origin.row][origin.col] as Piece);
-
-   const canCapture = (targetRow: number, targetCol: number): boolean => {
-      if (!board[targetRow][targetCol]) return false;
-
-      const targetPiece = board[targetRow][targetCol] as Piece;
-      const targetPieceColor: Color = getPieceColor(targetPiece);
-
-      return targetPieceColor !== pieceColor;
-   }
-
-   if (pieceColor === 'w') {
-      if (board[origin.row - 1][origin.col] === '') {
-         const moveForward: Coords = constructCoords(origin.row - 1, origin.col);
-         moves.push(moveForward);
-      }
-
-      if (origin.row === 6 && board[origin.row - 2][origin.col] === '') {
-         const doubleMoveForward: Coords = constructCoords(origin.row - 2, origin.col);
-         moves.push(doubleMoveForward);
-      }
-
-      if (canCapture(origin.row - 1, origin.col - 1)) {
-         const capture: Coords = constructCoords(origin.row - 1, origin.col - 1);
-         moves.push(capture);
-      }
-
-      if (canCapture(origin.row - 1, origin.col + 1)) {
-         const capture: Coords = constructCoords(origin.row - 1, origin.col + 1);
-         moves.push(capture);
-      }
-   } else {
-      if (board[origin.row + 1][origin.col] === '') {
-         const moveForward: Coords = constructCoords(origin.row + 1, origin.col);
-         moves.push(moveForward);
-      }
-
-      if (origin.row === 1 && board[origin.row + 2][origin.col] === '') {
-         const doubleMoveForward: Coords = constructCoords(origin.row + 2, origin.col);
-         moves.push(doubleMoveForward);
-      }
-
-      if (canCapture(origin.row + 1, origin.col - 1)) {
-         const capture: Coords = constructCoords(origin.row + 1, origin.col - 1);
-         moves.push(capture);
-      }
-
-      if (canCapture(origin.row + 1, origin.col + 1)) {
-         const capture: Coords = constructCoords(origin.row + 1, origin.col + 1);
-         moves.push(capture);
-      }
-   }
-
-   return moves;
+   return [];
 }
 
 const getMovesRook = (origin: Coords, board: string[][]): Coords[] => {

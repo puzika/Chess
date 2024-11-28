@@ -62,45 +62,6 @@ function generateFenPositionFromBoard(board: string[][]): string {
    return fenArray.join('/');
 }
 
-function setCastling(currentCastling: string, piece: Piece, origin: Coords, target: Coords, captured: Piece | ''): string {
-   let castling: string = '';
-
-   if (captured === 'R') {
-      if (target.row === 7 && target.col === 0) castling = currentCastling.replace('Q', '');
-      if (target.row === 7 && target.col === 7) castling = currentCastling.replace('K', '');
-   }
-
-   if (captured === 'r') {
-      if (target.row === 0 && target.col === 0) castling = currentCastling.replace('q', '');
-      if (target.row === 0 && target.col === 7) castling = currentCastling.replace('k', '');
-   }
-
-   switch (piece) {
-      case 'K': 
-         castling = currentCastling.replace('K', '');
-         castling = castling.replace('Q', '');
-         break;
-      case 'k':
-         castling = currentCastling.replace('k', '');
-         castling = castling.replace('q', '');
-         break;
-      case 'R':
-         if (origin.col === 0) castling = currentCastling.replace('Q', '');
-         if (origin.col === 7) castling = currentCastling.replace('K', '');
-
-         break;
-      case 'r':
-         if (origin.col === 0) castling = currentCastling.replace('q', '');
-         if (origin.col === 7) castling = currentCastling.replace('k', '');
-
-         break;
-   }
-
-   if (castling === '') castling = '-';
-
-   return castling;
-}
-
 export const boardSlice = createSlice({
    name: 'board',
    initialState,
@@ -122,7 +83,7 @@ export const boardSlice = createSlice({
 
             if (state.turn === 'b') state.fullmove += 1;
 
-            if (state.castling !== '-') state.castling = setCastling(state.castling, piece, origin, target, captured);
+            // if (state.castling !== '-') state.castling = setCastling(state.castling, piece, origin, target, captured);
             
             state.position = position; 
             state.turn = state.turn === 'w' ? 'b' : 'w';
