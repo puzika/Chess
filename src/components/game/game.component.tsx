@@ -1,5 +1,5 @@
 import { ReactNode } from 'react';
-import * as S from './game-container.style';
+import * as S from './game.style';
 
 type GameContainerProps = {
    children?: ReactNode | ReactNode[],
