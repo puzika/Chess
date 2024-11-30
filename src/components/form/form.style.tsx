@@ -1,7 +1,7 @@
 import styled, { css } from "styled-components";
 import * as svar from '../../variables.style';
 
-interface Props {
+interface FormProps {
    isOpen: boolean,
 }
 
@@ -10,7 +10,7 @@ const hideForm = css`
    opacity: 0;
 `;
 
-export const Overlay = styled.div<Props>`
+export const Overlay = styled.div<FormProps>`
    position: absolute;
    display: flex;
    justify-content: center;
@@ -30,6 +30,8 @@ export const Form = styled.form`
    display: flex;
    flex-direction: column;
    align-items: center;
+   width: 30%;
+   min-width: 40rem;
    background-color: ${svar.clrPrimary};
    gap: 2rem;
    padding: 2.5rem 5rem;
@@ -41,13 +43,20 @@ export const FormTitle = styled.h3`
    font-weight: bold;
 `;
 
-export const FormItem = styled.label`
+export const FormItem = styled.div`
    display: flex;
    flex-direction: column;
    align-items: center;
    gap: 1rem;
    width: 100%;
 `;
+
+export const FormCards = styled.div`
+   width: 100%;
+   display: flex;
+   justify-content: space-between;
+   align-items: center;
+`
 
 export const FormLabelMain = styled.p`
    font-size: 2.5rem;
