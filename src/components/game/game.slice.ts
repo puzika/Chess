@@ -1,10 +1,11 @@
 import { createSlice } from "@reduxjs/toolkit";
+import { PayloadAction } from "@reduxjs/toolkit";
 import { RootState } from "../../store/store";
 import { Color } from "../board/board.slice";
 
 type GameType = 'computer' | 'analysis';
 
-type Game = {
+export type Game = {
    type: GameType,
    player: Color,
    time: number,
@@ -22,19 +23,14 @@ export const gameSlice = createSlice({
    name: 'game',
    initialState,
    reducers: {
-      setTypeComputer: (state) => {
-         state.type = 'computer';
-      },
-
-      setTypeAnalysis: (state) => {
-         state.type = 'analysis';
+      startGame: (_, action: PayloadAction<Game>) => {
+         return action.payload;
       }
    },
 });
 
 export const {
-   setTypeAnalysis,
-   setTypeComputer,
+   startGame
 } = gameSlice.actions;
 
 export const selectType = (state: RootState): GameType => state.game.type;

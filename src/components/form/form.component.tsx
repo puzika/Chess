@@ -1,15 +1,37 @@
-import { useState, MouseEvent, ChangeEvent } from 'react';
+import { useState, MouseEvent, ChangeEvent, FormEvent } from 'react';
+import { useAppDispatch } from '../../store/hooks';
+import type { Color } from '../board/board.slice';
+import type { CardColor } from '../color-card/color-card.component';
+import type { Game } from '../game/game.slice';
+import { startGame } from '../game/game.slice';
 import ExitButton from '../exit-button/exit-button.component';
 import Button from '../button/button.component';
 import ColorCard from '../color-card/color-card.component';
-import type { CardColor } from '../color-card/color-card.component';
 import * as S from './form.style';
 
 export default function Form() {
+   const dispatch = useAppDispatch();
    const [formOpen, setFormOpen] = useState<boolean>(true);
    const [time, setTime] = useState<number>(10);
    const [depth, setDepth] = useState<number>(10);
-   const [color, setColor] = useState<CardColor>('random');
+   const [cardColor, setCardColor] = useState<CardColor>('random');
+
+   const start = (): void => {
+      let player: Color;
+
+      if (cardColor === 'black') player = 'b';
+      else if (cardColor === 'white') player = 'w';
+      else player = Math.random() < .5 ? 'w' : 'b';
+
+      const game: Game = {
+         type: 'computer',
+         time,
+         depth,
+         player,
+      }
+
+      dispatch(startGame(game));
+   }
 
    const handleChangeTime = (e: ChangeEvent<HTMLInputElement>): void => {
       setTime(Number(e.currentTarget.value));
@@ -24,18 +46,27 @@ export default function Form() {
 
       if (!target.classList.contains('overlay')) return;
 
+      start();
       setFormOpen(false);
    }
 
    const handleClickClose = (e: MouseEvent<HTMLButtonElement>): void => {
       e.preventDefault();
 
+      start();
+      setFormOpen(false);
+   }
+
+   const handleSubmit = (e: FormEvent<HTMLFormElement>): void => {
+      e.preventDefault();
+
+      start();
       setFormOpen(false);
    }
 
    return (
       <S.Overlay className='overlay' isOpen={formOpen} onClick={handleClickOverlay}>
-         <S.Form>
+         <S.Form onSubmit={handleSubmit}>
             <ExitButton closeHandler={handleClickClose} />
             <S.FormTitle>Play vs computer</S.FormTitle>
             <S.FormItem>
@@ -50,11 +81,11 @@ export default function Form() {
             </S.FormItem>
             <S.FormItem>
                <S.FormCards>
-                  <ColorCard clickHandler={() => setColor('white')} chosen={color === 'white'} width={8} color='white' />
-                  <ColorCard clickHandler={() => setColor('random')} chosen={color === 'random'} width={10} color='random' />
-                  <ColorCard clickHandler={() => setColor('black')} chosen={color === 'black'} width={8} color='black' />
+                  <ColorCard clickHandler={() => setCardColor('white')} chosen={cardColor === 'white'} width={8} color='white' />
+                  <ColorCard clickHandler={() => setCardColor('random')} chosen={cardColor === 'random'} width={10} color='random' />
+                  <ColorCard clickHandler={() => setCardColor('black')} chosen={cardColor === 'black'} width={8} color='black' />
                </S.FormCards>
-               <S.FormLabelSecondary>Your color: {color}</S.FormLabelSecondary>
+               <S.FormLabelSecondary>Your color: {cardColor}</S.FormLabelSecondary>
             </S.FormItem>
             <Button>Start game</Button>
          </S.Form>
