@@ -1,6 +1,11 @@
 import styled from "styled-components";
 import * as svar from '../../variables.style';
 
+type CellProps = {
+   $color: string,
+   $backgroundColor: string,
+}
+
 export const Board = styled.div`
    width: 40%;
    display: grid;
@@ -8,11 +13,13 @@ export const Board = styled.div`
    border: 1rem solid ${svar.clrPrimary};
 `;
 
-export const Cell = styled.div`
+export const Cell = styled.div<CellProps>`
    position: relative;
    aspect-ratio: 1;
    padding: .5rem;
    transition: box-shadow .15s;
+   background-color: ${(props) => props.$backgroundColor};
+   color: ${(props) => props.$color};
 `;
 
 export const RankMark = styled.span`

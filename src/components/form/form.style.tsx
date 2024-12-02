@@ -2,7 +2,7 @@ import styled, { css } from "styled-components";
 import * as svar from '../../variables.style';
 
 interface FormProps {
-   isOpen: boolean,
+   $isOpen: boolean,
 }
 
 const hideForm = css`
@@ -11,7 +11,7 @@ const hideForm = css`
 `;
 
 export const Overlay = styled.div<FormProps>`
-   position: absolute;
+   position: fixed;
    display: flex;
    justify-content: center;
    align-items: center;
@@ -22,7 +22,7 @@ export const Overlay = styled.div<FormProps>`
    z-index: 100;
    transition: all .5s;
    
-   ${(props) => !props.isOpen && hideForm};
+   ${(props) => !props.$isOpen && hideForm};
 `;
 
 export const Form = styled.form`

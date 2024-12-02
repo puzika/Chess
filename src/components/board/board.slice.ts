@@ -3,6 +3,8 @@ import type { RootState } from "../../store/store";
 
 export type Color = 'w' | 'b';
 export type Piece = 'r' | 'n' | 'b' | 'q' | 'k' | 'p' | 'R' | 'N' | 'B' | 'Q' | 'K' | 'P';
+export const FILES: string[] = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+export const RANKS: string[] = ['1', '2', '3', '4', '5', '6', '7', '8'];
 
 type BoardState = {
    position: string,
@@ -70,11 +72,9 @@ export const boardSlice = createSlice({
          reducer(state, action: PayloadAction<MovePayload>) {
             const { position, piece, target, origin, captured } = action.payload;
 
-            const files: string[] = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
-
             if ((piece === 'P' || piece === 'p') && Math.abs(target.row - origin.row) === 2) {
                const rank: string = state.turn === 'w' ? '6' : '3';
-               const file: string = files[target.col];
+               const file: string = FILES[target.col];
 
                state.enpassant = `${file}${rank}`;
             } else {

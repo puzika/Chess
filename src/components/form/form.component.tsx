@@ -65,7 +65,7 @@ export default function Form() {
    }
 
    return (
-      <S.Overlay className='overlay' isOpen={formOpen} onClick={handleClickOverlay}>
+      <S.Overlay className='overlay' $isOpen={formOpen} onClick={handleClickOverlay}>
          <S.Form onSubmit={handleSubmit}>
             <ExitButton closeHandler={handleClickClose} />
             <S.FormTitle>Play vs computer</S.FormTitle>
