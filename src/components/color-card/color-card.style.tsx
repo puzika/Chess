@@ -10,7 +10,7 @@ const backgroundRandom = css`
 
 export const Card = styled.div<CardStyleProps>`
    position: relative;
-   width: ${({width}) => width}rem;
+   width: ${({width}) => width};
    aspect-ratio: 1;
    border-width: .5rem;
    border-style: solid;

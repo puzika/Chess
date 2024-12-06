@@ -81,9 +81,9 @@ export default function Form() {
             </S.FormItem>
             <S.FormItem>
                <S.FormCards>
-                  <ColorCard clickHandler={() => setCardColor('white')} chosen={cardColor === 'white'} width={8} color='white' />
-                  <ColorCard clickHandler={() => setCardColor('random')} chosen={cardColor === 'random'} width={10} color='random' />
-                  <ColorCard clickHandler={() => setCardColor('black')} chosen={cardColor === 'black'} width={8} color='black' />
+                  <ColorCard clickHandler={() => setCardColor('white')} chosen={cardColor === 'white'} width={'8rem'} color='white' />
+                  <ColorCard clickHandler={() => setCardColor('random')} chosen={cardColor === 'random'} width={'10rem'} color='random' />
+                  <ColorCard clickHandler={() => setCardColor('black')} chosen={cardColor === 'black'} width={'8rem'} color='black' />
                </S.FormCards>
                <S.FormLabelSecondary>Your color: {cardColor}</S.FormLabelSecondary>
             </S.FormItem>

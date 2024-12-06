@@ -4,7 +4,7 @@ import * as svar from '../../variables.style';
 export type CardColor = 'black' | 'white' | 'random';
 
 export type CardProps = {
-   width: number,
+   width: string,
    color: CardColor,
    chosen?: boolean,
    clickHandler?: () => void,

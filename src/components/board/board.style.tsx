@@ -7,10 +7,11 @@ type CellProps = {
 }
 
 export const Board = styled.div`
-   width: 40%;
+   width: 100%;
    display: grid;
    grid-template-columns: repeat(8, 1fr);
    border: 1rem solid ${svar.clrPrimary};
+   margin: 0 1rem;
 `;
 
 export const Cell = styled.div<CellProps>`
