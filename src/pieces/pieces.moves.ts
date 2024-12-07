@@ -1,4 +1,5 @@
 import { Color, Piece, Coords } from "../components/board/board.slice"
+import { getIdxFromCoords } from "../components/board/board.utils";
 
 type Moves = Record<'K' | 'Q' | 'R' | 'B' | 'N' | 'P', (origin: Coords, board: string[][], player: Color) => Coords[]>;
 
@@ -9,7 +10,7 @@ const constructCoords = (row: number, col: number): Coords => {
    }
 }
 
-const getPieceColor = (piece: Piece): Color => {
+export const getPieceColor = (piece: Piece): Color => {
    return piece.toLowerCase() === piece ? 'b' : 'w';
 }
 
@@ -75,7 +76,7 @@ export function getLegalMoves(board: string[][], turn: Color, player: Color): Ma
          const origin: Coords = constructCoords(i, j);
          const pieceMoves: Coords[] = moves[board[i][j].toUpperCase() as keyof Moves](origin, board, player);
 
-         legalMoves.set(i * cols + j, pieceMoves);
+         legalMoves.set(getIdxFromCoords(origin), pieceMoves);
       }
    }
 
