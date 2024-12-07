@@ -3,7 +3,7 @@ import { useAppSelector, useAppDispatch } from '../../store/hooks';
 import { selectPlayer } from '../game/game.slice';
 import { RANKS, FILES, selectPosition, selectTurn, move } from './board.slice';
 import { getCellColor, getIdxFromCoords } from './board.utils';
-import { generateBoardFromFen, getHighlightedCells, moveHighlight, captureHighlight } from './board.utils';
+import { generateBoardFromFen, getLegalMovesForPiece, moveHighlight, captureHighlight } from './board.utils';
 import { pieces } from '../../pieces/pieces.images';
 import { getLegalMoves, getPieceColor } from '../../pieces/pieces.moves';
 import type { Color, Piece } from './board.slice';
@@ -21,10 +21,9 @@ export default function Board() {
    const ranks: string[] = player === 'w' ? [...RANKS].reverse() : RANKS;
    const files: string[] = player === 'w' ? FILES : [...FILES].reverse();
    const board: string[][] = useMemo(() => player === 'w' ? generateBoardFromFen(position) : generateBoardFromFen(position.split('').reverse().join('')), [turn, player]);
-   const legalMoves: Map<number, Coords[]> = useMemo(() => getLegalMoves(board, turn, player), [turn]);
+   const allLegalMoves: Map<number, Coords[]> = useMemo(() => getLegalMoves(board, turn, player), [turn, player]);
    const [origin, setOrigin] = useState<Coords>({ row: -1, col: -1 });
-
-   const highlightedCells: Set<number> = getHighlightedCells(origin, legalMoves);
+   const currLegalMoves: Set<number> = getLegalMovesForPiece(origin, allLegalMoves);
 
    const handleDragStart = (e: DragEvent<HTMLImageElement>): void => {
       const parentCell = e.currentTarget.parentElement as HTMLDivElement;
@@ -42,7 +41,15 @@ export default function Board() {
    const handleDragDrop = (e: DragEvent<HTMLDivElement>): void => {
       const targetCell = e.currentTarget as HTMLDivElement;
 
-      
+      const row: number = Number(targetCell.dataset.row);
+      const col: number = Number(targetCell.dataset.col);
+
+      if (!currLegalMoves.has(getIdxFromCoords({ row, col }))) return;
+
+      const target: Coords = { row, col };
+
+      setOrigin({ row: -1, col: -1});
+      dispatch(move(origin, target, board, player));
    }
 
    return (
@@ -60,9 +67,9 @@ export default function Board() {
                      onDrop={handleDragDrop}
 
                      style={{
-                        boxShadow: highlightedCells.has(getIdxFromCoords({ row: idxRank, col: idxFile})) ?
+                        boxShadow: currLegalMoves.has(getIdxFromCoords({ row: idxRank, col: idxFile})) ?
                            !!board[idxRank][idxFile] ? captureHighlight : moveHighlight :
-                           'none'
+                           'none',
                      }}
                   >
                      { idxRank === ranks.length - 1 && <S.FileMark>{file}</S.FileMark> }

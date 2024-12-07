@@ -47,7 +47,7 @@ export function isActive(coords: Coords): boolean {
    return coords.row === -1 && coords.col === -1;
 }
 
-export function getHighlightedCells(pieceCoords: Coords, legalMoves: Map<number, Coords[]>): Set<number> {
+export function getLegalMovesForPiece(pieceCoords: Coords, legalMoves: Map<number, Coords[]>): Set<number> {
    const idx: number = getIdxFromCoords(pieceCoords);
    const moves: Coords[] = legalMoves.get(idx) ?? [];
    const cellIndices: Set<number> = new Set();

@@ -37,7 +37,7 @@ type MovePayload = {
    captured: Piece | '',
 }
 
-function generateFenPositionFromBoard(board: string[][]): string {
+function generateFenPositionFromBoard(board: string[][], player: Color): string {
    const fenArray: string[] = [];
 
    for (const row of board) {
@@ -61,7 +61,7 @@ function generateFenPositionFromBoard(board: string[][]): string {
       fenArray.push(rank);
    }
 
-   return fenArray.join('/');
+   return player === 'w' ? fenArray.join('/') : fenArray.join('/').split('').reverse().join('');
 }
 
 export const boardSlice = createSlice({
@@ -90,13 +90,13 @@ export const boardSlice = createSlice({
             state.halfmove = !!captured || piece === 'p' || piece === 'P' ? 0 : state.halfmove + 1;
          },
 
-         prepare(origin: Coords, target: Coords, board: string[][]): { payload: MovePayload } {
+         prepare(origin: Coords, target: Coords, board: string[][], player: Color): { payload: MovePayload } {
             const captured = board[target.row][target.col] as Piece | '';
 
             board[target.row][target.col] = board[origin.row][origin.col];
             board[origin.row][origin.col] = '';
 
-            const fenPosition: string = generateFenPositionFromBoard(board);
+            const fenPosition: string = generateFenPositionFromBoard(board, player);
 
             return {
                payload: {
