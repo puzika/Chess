@@ -29,6 +29,17 @@ export const Timer = styled.div<TimerProps>`
    }
 `;
 
+export const TimerData = styled.div`
+   display: flex;
+   flex-direction: column;
+   align-items: center;
+   gap: 1rem;
+`;
+
 export const Time = styled.p`
    font-size: 4rem;
+`;
+
+export const PlayerName = styled.p`
+   font-size: 1.8rem;
 `

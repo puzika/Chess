@@ -1,5 +1,5 @@
 import { useAppSelector } from '../../store/hooks';
-import { selectPlayer, selectTime } from '../game/game.slice';
+import { selectPlayer, selectTime, selectDepth } from '../game/game.slice';
 import ColorCard from '../color-card/color-card.component';
 import { selectTurn } from '../board/board.slice';
 import type { Color } from '../board/board.slice';
@@ -17,6 +17,7 @@ export default function Timer() {
    const player: Color = useAppSelector(selectPlayer);
    const turn: Color = useAppSelector(selectTurn);
    const startTime: number = useAppSelector(selectTime);
+   const depth: number = useAppSelector(selectDepth);
 
    const time: string = formatTime(startTime * 60);
    const colorPlayer: CardColor = player === 'w' ? 'white' : 'black';
@@ -26,11 +27,17 @@ export default function Timer() {
       <S.TimerContainer>
          <S.Timer $isTurn={turn !== player}>
             <ColorCard chosen={turn !== player} color={colorComputer} width={'40%'} />
-            <S.Time>{time}</S.Time>
+            <S.TimerData>
+               <S.Time>{time}</S.Time>
+               <S.PlayerName>AI depth {depth}</S.PlayerName>
+            </S.TimerData>
          </S.Timer>
          <S.Timer $isTurn={turn === player}>
             <ColorCard chosen={turn === player} color={colorPlayer} width={'40%'} />
-            <S.Time>{time}</S.Time>
+            <S.TimerData>
+               <S.Time>{time}</S.Time>
+               <S.PlayerName>You</S.PlayerName>
+            </S.TimerData>
          </S.Timer>
       </S.TimerContainer>
    )
