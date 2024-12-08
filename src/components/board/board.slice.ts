@@ -29,85 +29,65 @@ export type Coords = {
    col: number,
 }
 
-type MovePayload = {
-   position: string,
-   piece: Piece,
+export type Move = {
    origin: Coords,
    target: Coords,
-   captured: Piece | '',
+}
+
+type MovePayload = {
+   moveCoords: Move,
+   player: Color,
+   board: string[][],
 }
 
 function generateFenPositionFromBoard(board: string[][], player: Color): string {
-   const fenArray: string[] = [];
+   if (player === 'b') {
+      for (const row of board) row.reverse();
+      board.reverse();
+   }
+
+   const fenArr: string[] = [];
 
    for (const row of board) {
-      let rank: string = '';
-      let countEmptyCells = 0;
+      let fenRow: string = '';
+      let countEmptyCells: number = 0;
 
-      for (let i = 0; i < row.length; i++) {
-         if (row[i] === '') countEmptyCells++;
-         else {
-            if (countEmptyCells !== 0) {
-               rank += `${countEmptyCells}`;
+      for (const char of row) {
+         if (char === '') {
+            countEmptyCells++;
+         } else {
+            if (countEmptyCells > 0) {
+               fenRow += `${countEmptyCells}`;
                countEmptyCells = 0;
             }
 
-            rank += row[i];
+            fenRow += char;
          }
       }
 
-      if (!!countEmptyCells) rank += `${countEmptyCells}`;
+      if (countEmptyCells > 0) fenRow += `${countEmptyCells}`;
 
-      fenArray.push(rank);
+      fenArr.push(fenRow);
    }
 
-   return player === 'w' ? fenArray.join('/') : fenArray.join('/').split('').reverse().join('');
+   return fenArr.join('/');
 }
 
 export const boardSlice = createSlice({
    name: 'board',
    initialState,
    reducers: {
-      move: {
-         reducer(state, action: PayloadAction<MovePayload>) {
-            const { position, piece, target, origin, captured } = action.payload;
+      move: (state, action: PayloadAction<MovePayload>) => {
+         const { moveCoords, player, board } = action.payload;
+         const { origin, target } = moveCoords;
 
-            if ((piece === 'P' || piece === 'p') && Math.abs(target.row - origin.row) === 2) {
-               const rank: string = state.turn === 'w' ? '6' : '3';
-               const file: string = FILES[target.col];
+         state.halfmove = board[target.row][target.col] !== '' || board[origin.row][origin.col].toLowerCase() === 'p' ? state.halfmove + 1 : 0;
+         state.fullmove = state.turn === 'b' ? state.fullmove + 1 : state.fullmove;
+         state.turn = state.turn === 'w' ? 'b' : 'w';
 
-               state.enpassant = `${file}${rank}`;
-            } else {
-               state.enpassant = '-';
-            }
-
-            if (state.turn === 'b') state.fullmove += 1;
-
-            // if (state.castling !== '-') state.castling = setCastling(state.castling, piece, origin, target, captured);
-            
-            state.position = position; 
-            state.turn = state.turn === 'w' ? 'b' : 'w';
-            state.halfmove = !!captured || piece === 'p' || piece === 'P' ? 0 : state.halfmove + 1;
-         },
-
-         prepare(origin: Coords, target: Coords, board: string[][], player: Color): { payload: MovePayload } {
-            const captured = board[target.row][target.col] as Piece | '';
-
-            board[target.row][target.col] = board[origin.row][origin.col];
-            board[origin.row][origin.col] = '';
-
-            const fenPosition: string = generateFenPositionFromBoard(board, player);
-
-            return {
-               payload: {
-                  position: fenPosition,
-                  piece: board[target.row][target.col] as Piece,
-                  origin,
-                  target,
-                  captured
-               }
-            }
-         }
+         board[target.row][target.col] = board[origin.row][origin.col];
+         board[origin.row][origin.col] = '';
+         state.position = generateFenPositionFromBoard(board, player);
       }
    }
 });

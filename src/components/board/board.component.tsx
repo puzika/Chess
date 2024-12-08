@@ -6,7 +6,7 @@ import { getCellColor, getIdxFromCoords } from './board.utils';
 import { generateBoardFromFen, getLegalMovesForPiece, moveHighlight, captureHighlight } from './board.utils';
 import { pieces } from '../../pieces/pieces.images';
 import { getLegalMoves, getPieceColor } from '../../pieces/pieces.moves';
-import type { Color, Piece } from './board.slice';
+import type { Color, Piece, Move } from './board.slice';
 import type { Coords } from './board.slice';
 import * as S from './board.style';
 import * as svar from '../../variables.style';
@@ -48,8 +48,10 @@ export default function Board() {
 
       const target: Coords = { row, col };
 
+      const moveCoords: Move = { origin, target };
+
       setOrigin({ row: -1, col: -1});
-      dispatch(move(origin, target, board, player));
+      dispatch(move({board, moveCoords, player}));
    }
 
    return (
@@ -77,7 +79,7 @@ export default function Board() {
                      {
                         !!board[idxRank][idxFile] && 
                         <S.Piece 
-                           draggable={player === turn && turn === getPieceColor(board[idxRank][idxFile] as Piece)} 
+                           draggable={turn === getPieceColor(board[idxRank][idxFile] as Piece)} 
                            src={pieces[board[idxRank][idxFile]]}
                            onDragStart={handleDragStart}
                         /> 
