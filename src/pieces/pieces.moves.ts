@@ -154,7 +154,17 @@ const getMovesQueen = (origin: Coords, board: string[][]): Coords[] => {
 }
 
 const getMovesKing = (origin: Coords, board: string[][]): Coords[] => {
-   return [];
+   const kingMoves: Coords[] = [];
+   const { row, col } = origin;
+   const dirs: [number, number][] = [[-1, 0], [-1, -1], [-1, 1], [0, -1], [0, 1], [1, 0], [1, -1], [1, 1]];
+
+   for (const [drow, dcol] of dirs) {
+      if (isValidMove({ origin, target: { row: row + drow, col: col + dcol }}, board)) {
+         kingMoves.push(constructCoords(row + drow, col + dcol));
+      }
+   }
+
+   return kingMoves;
 }
 
 const moves: Moves = {
