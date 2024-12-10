@@ -135,7 +135,12 @@ const getMovesKnight = (origin: Coords, board: string[][]): Coords[] => {
 }
 
 const getMovesQueen = (origin: Coords, board: string[][]): Coords[] => {
-   return [];
+   const queenMoves: Coords[] = [];
+
+   const diagonalMoves: Coords[] = getMovesBishop(origin, board);
+   const horVertMoves: Coords[] = getMovesRook(origin, board);
+
+   return queenMoves.concat(diagonalMoves).concat(horVertMoves);
 }
 
 const getMovesKing = (origin: Coords, board: string[][]): Coords[] => {
