@@ -1,4 +1,4 @@
-import { Color, Piece, Coords } from "../components/board/board.slice"
+import { Color, Piece, Coords, Move } from "../components/board/board.slice"
 import { getIdxFromCoords } from "../components/board/board.utils";
 
 type Moves = Record<'K' | 'Q' | 'R' | 'B' | 'N' | 'P', (origin: Coords, board: string[][], player: Color) => Coords[]>;
@@ -27,6 +27,15 @@ const isOnBoard = (target: Coords): boolean => {
    );
 }
 
+const isValidMove = (move: Move, board: string[][]): boolean => {
+   const { origin, target } = move;
+
+   return (
+      isOnBoard(target) &&
+      (board[target.row][target.col] === '' || canTake(board[origin.row][origin.col], board[target.row][target.col]))
+   )
+}
+
 const getMovesPawn = (origin: Coords, board: string[][], player: Color): Coords[] => {
    const pawnMoves: Coords[] = [];
    const { row, col }: Coords = origin;
@@ -50,7 +59,6 @@ const getMovesPawn = (origin: Coords, board: string[][], player: Color): Coords[
 }
 
 const getMovesRook = (origin: Coords, board: string[][]): Coords[] => {
-   const [rows, cols] = [board.length, board[0].length];
    const rookMoves: Coords[] = [];
    const { row, col } = origin;
    let canMoveHorLeft: boolean = true;
@@ -60,43 +68,25 @@ const getMovesRook = (origin: Coords, board: string[][]): Coords[] => {
    let idx: number = 1;
 
    while (canMoveHorLeft || canMoveHorRight || canMoveVertUp || canMoveVertDown) {
-      if (canMoveHorLeft && isOnBoard({row, col: col - idx})) {
-         if (board[row][col - idx] === '') rookMoves.push(constructCoords(row, col - idx));
-         else if (canTake(board[row][col], board[row][col - idx])) {
-            rookMoves.push(constructCoords(row, col - idx));
-            canMoveHorLeft = false;
-         } else canMoveHorLeft = false;
+      if (canMoveHorLeft && isValidMove({ origin, target: {row, col: col - idx} }, board)) {
+         rookMoves.push(constructCoords(row, col - idx));
+         canMoveHorLeft = board[row][col - idx] === '';
       } else canMoveHorLeft = false;
 
-      if (canMoveHorRight && isOnBoard({row, col: col + idx})) {
-         if (board[row][col + idx] === '') rookMoves.push(constructCoords(row, col + idx));
-         else if (canTake(board[row][col], board[row][col + idx])) {
-            rookMoves.push(constructCoords(row, col + idx));
-            canMoveHorRight = false;
-         } else canMoveHorRight = false;
-      } else {
-         canMoveHorRight = false;
-      }
+      if (canMoveHorRight && isValidMove({ origin, target: {row, col: col + idx} }, board)) {
+         rookMoves.push(constructCoords(row, col + idx));
+         canMoveHorRight = board[row][col + idx] === '';
+      } else canMoveHorRight = false;
 
-      if (canMoveVertUp && isOnBoard({row: row - idx, col})) {
-         if (board[row - idx][col] === '') rookMoves.push(constructCoords(row - idx, col));
-         else if (canTake(board[row][col], board[row - idx][col])) {
-            rookMoves.push(constructCoords(row - idx, col));
-            canMoveVertUp = false;
-         } else canMoveVertUp = false;
-      } else {
-         canMoveVertUp = false;
-      }
+      if (canMoveVertUp && isValidMove({ origin, target: {row: row - idx, col} }, board)) {
+         rookMoves.push(constructCoords(row - idx, col));
+         canMoveVertUp = board[row - idx][col] === '';
+      } else canMoveVertUp = false;
 
-      if (canMoveVertDown && isOnBoard({row: row + idx, col})) {
-         if (board[row + idx][col] === '') rookMoves.push(constructCoords(row + idx, col));
-         else if (canTake(board[row][col], board[row + idx][col])) {
-            rookMoves.push(constructCoords(row + idx, col));
-            canMoveVertDown = false;
-         } else canMoveVertDown = false;
-      } else {
-         canMoveVertDown = false;
-      }
+      if (canMoveVertDown && isValidMove({ origin, target: {row: row + idx, col} }, board)) {
+         rookMoves.push(constructCoords(row + idx, col));
+         canMoveVertDown = board[row + idx][col] === '';
+      } else canMoveVertDown = false;
 
       idx++;
    }
@@ -105,7 +95,39 @@ const getMovesRook = (origin: Coords, board: string[][]): Coords[] => {
 }
 
 const getMovesBishop = (origin: Coords, board: string[][]): Coords[] => {
-   return [];
+   const bishopMoves: Coords[] = [];
+   const { row, col } = origin;
+   let canMoveLeftUp: boolean = true;
+   let canMoveLeftDown: boolean = true;
+   let canMoveRightUp: boolean = true;
+   let canMoveRightDown: boolean = true;
+   let idx: number = 1;
+
+   while (canMoveLeftUp || canMoveLeftDown || canMoveRightUp || canMoveRightDown) {
+      if (canMoveLeftUp && isValidMove({ origin, target: { row: row - idx, col: col - idx}}, board)) {
+         bishopMoves.push(constructCoords(row - idx, col - idx));
+         canMoveLeftUp = board[row - idx][col - idx] === '';
+      } else canMoveLeftUp = false;
+
+      if (canMoveLeftDown && isValidMove({ origin, target: { row: row + idx, col: col - idx}}, board)) {
+         bishopMoves.push(constructCoords(row + idx, col - idx));
+         canMoveLeftDown = board[row + idx][col - idx] === '';
+      } else canMoveLeftDown = false;
+
+      if (canMoveRightUp && isValidMove({ origin, target: { row: row - idx, col: col + idx}}, board)) {
+         bishopMoves.push(constructCoords(row - idx, col + idx));
+         canMoveRightUp = board[row - idx][col + idx] === '';
+      } else canMoveRightUp = false;
+
+      if (canMoveRightDown && isValidMove({ origin, target: { row: row + idx, col: col + idx}}, board)) {
+         bishopMoves.push(constructCoords(row + idx, col + idx));
+         canMoveRightDown = board[row + idx][col + idx] === '';
+      } else canMoveRightDown = false;
+
+      idx++;
+   }
+
+   return bishopMoves;
 }
 
 const getMovesKnight = (origin: Coords, board: string[][]): Coords[] => {
