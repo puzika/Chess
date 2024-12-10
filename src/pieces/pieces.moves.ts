@@ -131,7 +131,17 @@ const getMovesBishop = (origin: Coords, board: string[][]): Coords[] => {
 }
 
 const getMovesKnight = (origin: Coords, board: string[][]): Coords[] => {
-   return [];
+   const knightMoves: Coords[] = [];
+   const { row, col } = origin;
+   const dirs: [number, number][] = [[-2, -1], [-2, 1], [2, -1], [2, 1], [-1, -2], [-1, 2], [1, 2], [1, -2]];
+
+   for (const [drow, dcol] of dirs) {
+      if (isValidMove({ origin, target: { row: row + drow, col: col + dcol }}, board)) {
+         knightMoves.push(constructCoords(row + drow, col + dcol));
+      }
+   }
+
+   return knightMoves;
 }
 
 const getMovesQueen = (origin: Coords, board: string[][]): Coords[] => {
