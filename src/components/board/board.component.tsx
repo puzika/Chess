@@ -23,6 +23,7 @@ export default function Board() {
    const board: string[][] = useMemo(() => player === 'w' ? generateBoardFromFen(position) : generateBoardFromFen(position.split('').reverse().join('')), [turn, player]);
    const allLegalMoves: Map<number, Coords[]> = useMemo(() => getLegalMoves(board, turn, player), [turn, player]);
    const [origin, setOrigin] = useState<Coords>({ row: -1, col: -1 });
+   const [draggedOver, setDraggedOver] = useState<Coords>({row: -1, col: -1});
    const currLegalMoves: Set<number> = getLegalMovesForPiece(origin, allLegalMoves);
 
    const handleDragStart = (e: DragEvent<HTMLImageElement>): void => {
@@ -38,11 +39,22 @@ export default function Board() {
       e.preventDefault();
    }
 
+   const handleDragEnter = (e: DragEvent<HTMLDivElement>): void => {
+      const cell = e.currentTarget as HTMLDivElement;
+
+      const row: number = Number(cell.dataset.row);
+      const col: number = Number(cell.dataset.col);
+
+      setDraggedOver({ row, col });
+   }
+
    const handleDragDrop = (e: DragEvent<HTMLDivElement>): void => {
       const targetCell = e.currentTarget as HTMLDivElement;
 
       const row: number = Number(targetCell.dataset.row);
       const col: number = Number(targetCell.dataset.col);
+
+      setDraggedOver({ row: -1, col: -1 });
 
       if (!currLegalMoves.has(getIdxFromCoords({ row, col }))) return;
 
@@ -65,12 +77,17 @@ export default function Board() {
                      data-col={`${idxFile}`}
                      $backgroundColor={getCellColor(idxRank, idxFile) === 'w' ? svar.clrCellWhite : svar.clrCellBlack} 
                      $color={getCellColor(idxRank, idxFile) === 'w' ? svar.clrCellBlack : svar.clrCellWhite}
+                     onDragEnter={handleDragEnter}
                      onDragOver={handleDragOver}
                      onDrop={handleDragDrop}
 
                      style={{
                         boxShadow: currLegalMoves.has(getIdxFromCoords({ row: idxRank, col: idxFile})) ?
                            !!board[idxRank][idxFile] ? captureHighlight : moveHighlight :
+                           'none',
+                        backgroundImage: currLegalMoves.has(getIdxFromCoords({ row: idxRank, col: idxFile})) && 
+                           idxRank === draggedOver.row && idxFile === draggedOver.col ?
+                           `linear-gradient(90deg, ${svar.clrHighlightTransparent} 0% 50%, ${svar.clrHighlightTransparent} 50% 100%)` :
                            'none',
                      }}
                   >

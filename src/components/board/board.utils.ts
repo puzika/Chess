@@ -43,8 +43,37 @@ export function generateBoardFromFen(fen: string): string[][] {
    return board;
 }
 
-export function isActive(coords: Coords): boolean {
-   return coords.row === -1 && coords.col === -1;
+export function generateFenPositionFromBoard(board: string[][], player: Color): string {
+   if (player === 'b') {
+      for (const row of board) row.reverse();
+      board.reverse();
+   }
+
+   const fenArr: string[] = [];
+
+   for (const row of board) {
+      let fenRow: string = '';
+      let countEmptyCells: number = 0;
+
+      for (const char of row) {
+         if (char === '') {
+            countEmptyCells++;
+         } else {
+            if (countEmptyCells > 0) {
+               fenRow += `${countEmptyCells}`;
+               countEmptyCells = 0;
+            }
+
+            fenRow += char;
+         }
+      }
+
+      if (countEmptyCells > 0) fenRow += `${countEmptyCells}`;
+
+      fenArr.push(fenRow);
+   }
+
+   return fenArr.join('/');
 }
 
 export function getLegalMovesForPiece(pieceCoords: Coords, legalMoves: Map<number, Coords[]>): Set<number> {

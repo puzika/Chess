@@ -1,5 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import type { RootState } from "../../store/store";
+import { generateFenPositionFromBoard } from "./board.utils";
 
 export type Color = 'w' | 'b';
 export type Piece = 'r' | 'n' | 'b' | 'q' | 'k' | 'p' | 'R' | 'N' | 'B' | 'Q' | 'K' | 'P';
@@ -38,39 +39,6 @@ type MovePayload = {
    moveCoords: Move,
    player: Color,
    board: string[][],
-}
-
-function generateFenPositionFromBoard(board: string[][], player: Color): string {
-   if (player === 'b') {
-      for (const row of board) row.reverse();
-      board.reverse();
-   }
-
-   const fenArr: string[] = [];
-
-   for (const row of board) {
-      let fenRow: string = '';
-      let countEmptyCells: number = 0;
-
-      for (const char of row) {
-         if (char === '') {
-            countEmptyCells++;
-         } else {
-            if (countEmptyCells > 0) {
-               fenRow += `${countEmptyCells}`;
-               countEmptyCells = 0;
-            }
-
-            fenRow += char;
-         }
-      }
-
-      if (countEmptyCells > 0) fenRow += `${countEmptyCells}`;
-
-      fenArr.push(fenRow);
-   }
-
-   return fenArr.join('/');
 }
 
 export const boardSlice = createSlice({
