@@ -1,4 +1,4 @@
-import { useState, useMemo, DragEvent } from 'react';
+import { useState, useMemo, DragEvent, MouseEvent } from 'react';
 import { useAppSelector, useAppDispatch } from '../../store/hooks';
 import { selectPlayer } from '../game/game.slice';
 import { RANKS, FILES, selectPosition, selectTurn, move } from './board.slice';
@@ -59,11 +59,38 @@ export default function Board() {
       if (!currLegalMoves.has(getIdxFromCoords({ row, col }))) return;
 
       const target: Coords = { row, col };
-
       const moveCoords: Move = { origin, target };
 
-      setOrigin({ row: -1, col: -1});
       dispatch(move({board, moveCoords, player}));
+      setOrigin({ row: -1, col: -1});
+   }
+
+   const handleClick = (e: MouseEvent<HTMLDivElement>): void => {
+      const targetCell = e.currentTarget as HTMLDivElement;
+
+      const row: number = Number(targetCell.dataset.row);
+      const col: number = Number(targetCell.dataset.col);
+
+      const isValidOriginCell: boolean = allLegalMoves.has(getIdxFromCoords({ row, col }));
+
+      if (isValidOriginCell) setOrigin({ row, col });
+      else if (currLegalMoves.has(getIdxFromCoords({ row, col }))) {
+         const target: Coords = { row, col };
+         const moveCoords: Move = { origin, target };
+
+         dispatch(move({board, moveCoords, player}));
+         setOrigin({ row: -1, col: -1 });
+         setDraggedOver({ row: -1, col: -1 });
+      }
+   }
+
+   const handleMouseOver = (e: MouseEvent<HTMLDivElement>): void => {
+      const cell = e.currentTarget as HTMLDivElement;
+
+      const row: number = Number(cell.dataset.row);
+      const col: number = Number(cell.dataset.col);
+
+      setDraggedOver({ row, col });
    }
 
    return (
@@ -80,6 +107,8 @@ export default function Board() {
                      onDragEnter={handleDragEnter}
                      onDragOver={handleDragOver}
                      onDrop={handleDragDrop}
+                     onClick={handleClick}
+                     onMouseOver={handleMouseOver}
 
                      style={{
                         boxShadow: currLegalMoves.has(getIdxFromCoords({ row: idxRank, col: idxFile})) ?
