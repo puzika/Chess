@@ -176,6 +176,52 @@ const moves: Moves = {
    K: getMovesKing,
 }
 
+const willBeChecked = (move: Move, board: string[][], player: Color): boolean => {
+   const [rows, cols] = [board.length, board[0].length];
+   const { origin, target } = move;
+   const turn: Color = getPieceColor(board[origin.row][origin.col] as Piece);
+   const kingCoords: Coords = { row: -1, col: -1 };
+
+   const targetPiece: string = board[target.row][target.col];
+   board[target.row][target.col] = board[origin.row][origin.col];
+   board[origin.row][origin.col] = '';
+
+   for (let i: number = 0; i < rows; i++) {
+      for (let j: number = 0; j < cols; j++) {
+         if (
+            board[i][j] !== '' &&
+            getPieceColor(board[i][j] as Piece) === turn &&
+            board[i][j].toLowerCase() as Piece === 'k'
+         ) {
+            kingCoords.row = i;
+            kingCoords.col = j;
+            break;
+         }
+      }
+   }
+
+   for (let i: number = 0; i < rows; i++) {
+      for (let j: number = 0; j < cols; j++) {
+         if (board[i][j] === '' || turn === getPieceColor(board[i][j] as Piece)) continue;
+
+         const opponentPieceOrigin: Coords = constructCoords(i, j);
+         const opponentPieceMoves: Coords[] = moves[board[i][j].toUpperCase() as keyof Moves](opponentPieceOrigin, board, player);
+
+         if (opponentPieceMoves.some(m => m.row === kingCoords.row && m.col === kingCoords.col)) {
+            board[origin.row][origin.col] = board[target.row][target.col];
+            board[target.row][target.col] = targetPiece;
+            
+            return true;
+         }
+      }
+   }
+
+   board[origin.row][origin.col] = board[target.row][target.col];
+   board[target.row][target.col] = targetPiece;
+
+   return false;
+}
+
 export function getLegalMoves(board: string[][], turn: Color, player: Color): Map<number, Coords[]> {
    const [rows, cols]: [number, number] = [board.length, board[0].length];
    const legalMoves: Map<number, Coords[]> = new Map();
@@ -186,8 +232,9 @@ export function getLegalMoves(board: string[][], turn: Color, player: Color): Ma
 
          const origin: Coords = constructCoords(i, j);
          const pieceMoves: Coords[] = moves[board[i][j].toUpperCase() as keyof Moves](origin, board, player);
+         const legalPieceMoves: Coords[] = pieceMoves.filter(m => !willBeChecked({ origin, target: m }, board, player));
 
-         legalMoves.set(getIdxFromCoords(origin), pieceMoves);
+         legalMoves.set(getIdxFromCoords(origin), legalPieceMoves);
       }
    }
 
