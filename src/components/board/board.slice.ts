@@ -45,7 +45,7 @@ export const boardSlice = createSlice({
    name: 'board',
    initialState,
    reducers: {
-      move: (state, action: PayloadAction<MovePayload>) => {
+      movePlayer: (state, action: PayloadAction<MovePayload>) => {
          const { moveCoords, player, board } = action.payload;
          const { origin, target } = moveCoords;
 
@@ -60,7 +60,7 @@ export const boardSlice = createSlice({
    }
 });
 
-export const { move } = boardSlice.actions;
+export const { movePlayer } = boardSlice.actions;
 
 export const selectPosition = (state: RootState): string => state.board.position;
 export const selectTurn = (state: RootState): Color => state.board.turn;

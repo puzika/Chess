@@ -1,11 +1,11 @@
 import { useState, useMemo, DragEvent, MouseEvent } from 'react';
 import { useAppSelector, useAppDispatch } from '../../store/hooks';
 import { selectPlayer } from '../game/game.slice';
-import { RANKS, FILES, selectPosition, selectTurn, move } from './board.slice';
+import { RANKS, FILES, selectPosition, selectTurn, movePlayer } from './board.slice';
 import { getCellColor, getIdxFromCoords } from './board.utils';
-import { generateBoardFromFen, getLegalMovesForPiece, moveHighlight, captureHighlight } from './board.utils';
+import { generateBoardFromFen, getLegalMovesForPiece, moveHighlight, captureHighlight, checkHighLight } from './board.utils';
 import { pieces } from '../../pieces/pieces.images';
-import { getLegalMoves, getPieceColor } from '../../pieces/pieces.moves';
+import { getLegalMoves, getPieceColor, isChecked } from '../../pieces/pieces.moves';
 import type { Color, Piece, Move } from './board.slice';
 import type { Coords } from './board.slice';
 import * as S from './board.style';
@@ -22,6 +22,7 @@ export default function Board() {
    const files: string[] = player === 'w' ? FILES : [...FILES].reverse();
    const board: string[][] = useMemo(() => player === 'w' ? generateBoardFromFen(position) : generateBoardFromFen(position.split('').reverse().join('')), [turn, player]);
    const allLegalMoves: Map<number, Coords[]> = useMemo(() => getLegalMoves(board, turn, player), [turn, player]);
+   const [checked, setChecked] = useState<boolean>(false);
    const [origin, setOrigin] = useState<Coords>({ row: -1, col: -1 });
    const [draggedOver, setDraggedOver] = useState<Coords>({row: -1, col: -1});
    const currLegalMoves: Set<number> = getLegalMovesForPiece(origin, allLegalMoves);
@@ -61,8 +62,9 @@ export default function Board() {
       const target: Coords = { row, col };
       const moveCoords: Move = { origin, target };
 
-      dispatch(move({board, moveCoords, player}));
+      dispatch(movePlayer({board, moveCoords, player}));
       setOrigin({ row: -1, col: -1});
+      setChecked(isChecked(board, turn, player));
    }
 
    const handleClick = (e: MouseEvent<HTMLDivElement>): void => {
@@ -78,9 +80,10 @@ export default function Board() {
          const target: Coords = { row, col };
          const moveCoords: Move = { origin, target };
 
-         dispatch(move({board, moveCoords, player}));
+         dispatch(movePlayer({board, moveCoords, player}));
          setOrigin({ row: -1, col: -1 });
          setDraggedOver({ row: -1, col: -1 });
+         setChecked(isChecked(board, turn, player));
       }
    }
 
@@ -113,7 +116,7 @@ export default function Board() {
                      style={{
                         boxShadow: currLegalMoves.has(getIdxFromCoords({ row: idxRank, col: idxFile})) ?
                            !!board[idxRank][idxFile] ? captureHighlight : moveHighlight :
-                           'none',
+                           checked && board[idxRank][idxFile].toLowerCase() === 'k' && getPieceColor(board[idxRank][idxFile] as Piece) === turn ? checkHighLight : 'none',
                         backgroundImage: currLegalMoves.has(getIdxFromCoords({ row: idxRank, col: idxFile})) && 
                            idxRank === draggedOver.row && idxFile === draggedOver.col ?
                            `linear-gradient(90deg, ${svar.clrHighlightTransparent} 0% 50%, ${svar.clrHighlightTransparent} 50% 100%)` :

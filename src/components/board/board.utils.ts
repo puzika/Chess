@@ -6,6 +6,7 @@ const COLS: number = 8;
 
 export const moveHighlight = `inset 0 0 1.5rem .5rem ${svar.clrHighlight}`;
 export const captureHighlight = `inset 0 0 1.5rem .5rem ${svar.clrNeutralMax}`;
+export const checkHighLight = `inset 0 0 1.5rem .5rem ${svar.clrHighlightCheck}`;
 
 export function getCellColor(row: number, col: number): Color {
    return (row % 2 === 0 && col % 2 === 0) || (row % 2 !== 0 && col % 2 !== 0) ? 'w' : 'b';
