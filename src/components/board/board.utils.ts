@@ -86,3 +86,26 @@ export function getLegalMovesForPiece(pieceCoords: Coords, legalMoves: Map<numbe
 
    return cellIndices;
 }
+
+export function getCastlingState(currCastlingState: string, origin: Coords, player: Color): string {
+   if (currCastlingState === '-') return currCastlingState;
+
+   const originIdx: number = getIdxFromCoords(origin);
+   const initialKingRookCells: Map<number, string> = new Map([
+      [getIdxFromCoords({ row: 0, col: 0 }), player === 'w' ? 'q' : 'K'],
+      [getIdxFromCoords({ row: 0, col: COLS - 1 }), player === 'w' ? 'k' : 'Q'],
+      [getIdxFromCoords({ row: 0, col: 3 }), player === 'w' ? '' : 'KQ'],           //KING OR QUEEN POSITION
+      [getIdxFromCoords({ row: 0, col: 4 }), player === 'w' ? 'kq' : ''],           //KING OR QUEEN POSITION
+      [getIdxFromCoords({ row: ROWS - 1, col: 0 }), player === 'w' ? 'Q' : 'k'],
+      [getIdxFromCoords({ row: ROWS - 1, col: COLS - 1 }), player === 'w' ? 'K' : 'q'],
+      [getIdxFromCoords({ row: ROWS - 1, col: 3 }), player === 'w' ? '' : 'kq'],    //KING OR QUEEN POSITION
+      [getIdxFromCoords({ row: ROWS - 1, col: 4 }), player === 'w' ? 'KQ' : ''],    //KING OR QUEEN POSITION
+   ]);
+
+   const stateToBeRemoved: string = initialKingRookCells.get(originIdx) ?? '';
+   const newCastlingState: string = stateToBeRemoved === '' ? 
+      currCastlingState : 
+      [...stateToBeRemoved].reduce((newState, toBeRemoved) => newState = newState.replace(toBeRemoved, ''), currCastlingState);
+
+   return newCastlingState || '-';
+}

@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import type { RootState } from "../../store/store";
-import { generateFenPositionFromBoard } from "./board.utils";
+import { generateFenPositionFromBoard, getCastlingState } from "./board.utils";
 
 export type Color = 'w' | 'b';
 export type Piece = 'r' | 'n' | 'b' | 'q' | 'k' | 'p' | 'R' | 'N' | 'B' | 'Q' | 'K' | 'P';
@@ -52,6 +52,7 @@ export const boardSlice = createSlice({
          state.halfmove = board[target.row][target.col] !== '' || board[origin.row][origin.col].toLowerCase() === 'p' ? state.halfmove + 1 : 0;
          state.fullmove = state.turn === 'b' ? state.fullmove + 1 : state.fullmove;
          state.turn = state.turn === 'w' ? 'b' : 'w';
+         state.castling = getCastlingState(state.castling, origin, player);
 
          board[target.row][target.col] = board[origin.row][origin.col];
          board[origin.row][origin.col] = '';

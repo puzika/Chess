@@ -1,7 +1,7 @@
 import { useState, useMemo, DragEvent, MouseEvent } from 'react';
 import { useAppSelector, useAppDispatch } from '../../store/hooks';
 import { selectPlayer } from '../game/game.slice';
-import { RANKS, FILES, selectPosition, selectTurn, movePlayer } from './board.slice';
+import { RANKS, FILES, selectPosition, selectTurn, selectCastling, movePlayer } from './board.slice';
 import { getCellColor, getIdxFromCoords } from './board.utils';
 import { generateBoardFromFen, getLegalMovesForPiece, moveHighlight, captureHighlight, checkHighLight } from './board.utils';
 import { pieces } from '../../pieces/pieces.images';
@@ -17,6 +17,8 @@ export default function Board() {
    const player: Color = useAppSelector(selectPlayer);
    const turn: Color = useAppSelector(selectTurn);
    const position: string = useAppSelector(selectPosition);
+   const castling: string = useAppSelector(selectCastling);
+   console.log(castling);
 
    const ranks: string[] = player === 'w' ? [...RANKS].reverse() : RANKS;
    const files: string[] = player === 'w' ? FILES : [...FILES].reverse();
@@ -46,7 +48,8 @@ export default function Board() {
       const row: number = Number(cell.dataset.row);
       const col: number = Number(cell.dataset.col);
 
-      setDraggedOver({ row, col });
+      if (currLegalMoves.has(getIdxFromCoords({ row, col }))) setDraggedOver({ row, col });
+      else if (draggedOver.row !== -1 && draggedOver.col !== -1) setDraggedOver({ row: -1, col: -1 });
    }
 
    const handleDragDrop = (e: DragEvent<HTMLDivElement>): void => {
@@ -93,7 +96,8 @@ export default function Board() {
       const row: number = Number(cell.dataset.row);
       const col: number = Number(cell.dataset.col);
 
-      setDraggedOver({ row, col });
+      if (currLegalMoves.has(getIdxFromCoords({ row, col }))) setDraggedOver({ row, col });
+      else if (draggedOver.row !== -1 && draggedOver.col !== -1) setDraggedOver({ row: -1, col: -1 });
    }
 
    return (
