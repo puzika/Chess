@@ -3,6 +3,14 @@ import { getIdxFromCoords, getCoordsFromIdx } from "../components/board/board.ut
 
 type Moves = Record<'K' | 'Q' | 'R' | 'B' | 'N' | 'P', (origin: Coords, board: string[][], player: Color) => Coords[]>;
 
+export type GameState = {
+   board: string[][],
+   turn: Color,
+   player: Color,
+   castling: string,
+   enpassant: string,
+}
+
 const constructCoords = (row: number, col: number): Coords => {
    return {
       row,
@@ -176,7 +184,9 @@ const moves: Moves = {
    K: getMovesKing,
 }
 
-const getPseudoLegalMoves = (board: string[][], turn: Color, player: Color): Map<number, Coords[]> => {
+const getPseudoLegalMoves = (gameState: GameState): Map<number, Coords[]> => {
+   const { board, turn, player} = gameState;
+
    const [rows, cols]: [number, number] = [board.length, board[0].length];
    const pseudoLegalMoves: Map<number, Coords[]> = new Map();
 
@@ -194,11 +204,13 @@ const getPseudoLegalMoves = (board: string[][], turn: Color, player: Color): Map
    return pseudoLegalMoves;
 }
 
-const willBeChecked = (move: Move, board: string[][], player: Color): boolean => {
+const willBeChecked = (move: Move, gameState: GameState): boolean => {
+   const { board } = gameState;
    const [rows, cols] = [board.length, board[0].length];
    const { origin, target } = move;
    const turn: Color = getPieceColor(board[origin.row][origin.col] as Piece);
    const opponent: Color = turn === 'w' ? 'b' : 'w';
+   const gameStateTurnOpponent: GameState = { ...gameState, turn: opponent };
    const kingCoords: Coords = { row: -1, col: -1 };
 
    const targetPiece: string = board[target.row][target.col];
@@ -218,7 +230,7 @@ const willBeChecked = (move: Move, board: string[][], player: Color): boolean =>
       }
    }
 
-   const pseudoLegalMoves: Map<number, Coords[]> = getPseudoLegalMoves(board, opponent, player);
+   const pseudoLegalMoves: Map<number, Coords[]> = getPseudoLegalMoves(gameStateTurnOpponent);
 
    for (const [_, piecePseudoLegalMoves] of pseudoLegalMoves) {
       if (piecePseudoLegalMoves.some(m => m.row === kingCoords.row && m.col === kingCoords.col)) {
@@ -235,8 +247,9 @@ const willBeChecked = (move: Move, board: string[][], player: Color): boolean =>
    return false;
 }
 
-export const isChecked = (board: string[][], turn: Color, player: Color): boolean => {
-   const pseudoLegalMoves: Map<number, Coords[]> = getPseudoLegalMoves(board, turn, player);
+export const isChecked = (gameState: GameState): boolean => {
+   const { board } = gameState;
+   const pseudoLegalMoves: Map<number, Coords[]> = getPseudoLegalMoves(gameState);
 
    for (const [_, piecePseudoLegalMoves] of pseudoLegalMoves) {
       if (piecePseudoLegalMoves.some(m => board[m.row][m.col].toLowerCase() === 'k')) return true;
@@ -245,13 +258,63 @@ export const isChecked = (board: string[][], turn: Color, player: Color): boolea
    return false;
 }
 
-export function getLegalMoves(board: string[][], turn: Color, player: Color): Map<number, Coords[]> {
+const getCastlingMoves = (gameState: GameState): Coords[] => {
+   const { board, castling, turn, player } = gameState;
+   const [rows, cols] = [board.length, board[0].length];
+   const opponent: Color = turn === 'w' ? 'b' : 'w';
+   const castlingMoves: Coords[] = [];
+
+   if (castling === '-' || isChecked({ ...gameState, turn: opponent })) return castlingMoves;
+
+   const castlingCombinations: [Coords, Coords, string][] = [
+      [{ row: 0, col: 0 }, player === 'w' ? { row: 0, col: 4 } : { row: 0, col: 3 }, player === 'w' ? 'q' : 'K'],
+      [{ row: 0, col: cols - 1}, player === 'w' ? { row: 0, col: 4 } : { row: 0, col: 3 }, player === 'w' ? 'k' : 'Q'],
+      [{ row: rows - 1, col: 0 }, player === 'w' ? { row: rows - 1, col: 4 } : { row: rows - 1, col: 3 }, player === 'w' ? 'Q' : 'k'],
+      [{ row: rows - 1, col: cols - 1 }, player === 'w' ? { row: rows - 1, col: 4 } : { row: rows - 1, col: 3 }, player === 'w' ? 'K' : 'q']
+   ];
+
+   const areEmpty = (start: Coords, end: Coords): boolean => {
+      const { row, col: startCol } = start;
+      const { col: endCol } = end;
+
+      for (let i: number = startCol + 1; i < endCol; i++) {
+         if (board[row][i] !== '') return false;
+      }
+
+      return true;
+   }
+
+   for (const [rookCoords, kingCoords, castlingType] of castlingCombinations) {
+      const castlingColor: Color = castlingType.toLowerCase() === castlingType ? 'b' : 'w';
+      const direction: number = kingCoords.col - rookCoords.col > 0 ? -1 : 1;
+      const regularMove: Coords = { row: kingCoords.row, col: kingCoords.col + direction };
+      const castlingMove: Coords = { row: kingCoords.row, col: kingCoords.col + 2 * direction };
+
+      if (
+         castlingColor === turn &&
+         castling.includes(castlingType) &&
+         areEmpty(kingCoords, rookCoords) &&
+         !willBeChecked({ origin: kingCoords, target: regularMove }, gameState) &&
+         !willBeChecked({ origin: kingCoords, target: castlingMove }, gameState)
+      ) castlingMoves.push(castlingMove);
+   }
+
+   return castlingMoves;
+}
+
+export function getLegalMoves(gameState: GameState): Map<number, Coords[]> {
+   const { board } = gameState;
    const legalMoves: Map<number, Coords[]> = new Map();
-   const pseudoLegalMoves: Map<number, Coords[]> = getPseudoLegalMoves(board, turn, player);
+   const pseudoLegalMoves: Map<number, Coords[]> = getPseudoLegalMoves(gameState);
 
    for (const [pieceIdx, piecePseudoLegalMoves] of pseudoLegalMoves) {
       const origin: Coords = getCoordsFromIdx(pieceIdx);
-      const pieceLegalMoves: Coords[] = piecePseudoLegalMoves.filter(m => !willBeChecked({ origin, target: m }, board, player));
+      const pieceLegalMoves: Coords[] = piecePseudoLegalMoves.filter(m => !willBeChecked({ origin, target: m }, gameState));
+
+      if (board[origin.row][origin.col].toLowerCase() === 'k') {
+         const castlingMoves: Coords[] = getCastlingMoves(gameState);
+         castlingMoves.length > 0 && pieceLegalMoves.push(...castlingMoves);
+      }
 
       legalMoves.set(pieceIdx, pieceLegalMoves);
    }
