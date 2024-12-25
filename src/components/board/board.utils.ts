@@ -1,4 +1,4 @@
-import type { Color, Coords } from "./board.slice";
+import type { Color, Coords, Move } from "./board.slice";
 import * as svar from '../../variables.style';
 
 const ROWS: number = 8;
@@ -87,7 +87,7 @@ export function getLegalMovesForPiece(pieceCoords: Coords, legalMoves: Map<numbe
    return cellIndices;
 }
 
-export function getCastlingState(currCastlingState: string, origin: Coords, player: Color): string {
+export function getUpdatedCastlingState(currCastlingState: string, origin: Coords, player: Color): string {
    if (currCastlingState === '-') return currCastlingState;
 
    const originIdx: number = getIdxFromCoords(origin);
@@ -108,4 +108,23 @@ export function getCastlingState(currCastlingState: string, origin: Coords, play
       [...stateToBeRemoved].reduce((newState, toBeRemoved) => newState = newState.replace(toBeRemoved, ''), currCastlingState);
 
    return newCastlingState || '-';
+}
+
+export function moveBoardPieces(board: string[][], move: Move): void {
+   const [rows, cols] = [board.length, board[0].length];
+   const { origin, target } = move;
+
+   board[target.row][target.col] = board[origin.row][origin.col];
+   board[origin.row][origin.col] = '';
+
+   // if castling
+   if (board[target.row][target.col].toLowerCase() === 'k' && Math.abs(target.col - origin.col) === 2) {
+      if (target.col - origin.col < 0) {
+         board[target.row][target.col + 1] = board[target.row][0];
+         board[target.row][0] = '';
+      } else {
+         board[target.row][target.col - 1] = board[target.row][cols - 1];
+         board[target.row][cols - 1] = '';
+      }
+   }
 }
