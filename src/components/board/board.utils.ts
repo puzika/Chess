@@ -1,4 +1,4 @@
-import type { Color, Coords, Move } from "./board.slice";
+import { Color, Coords, Move, FILES, RANKS } from "./board.slice";
 import * as svar from '../../variables.style';
 
 const ROWS: number = 8;
@@ -111,7 +111,7 @@ export function getUpdatedCastlingState(currCastlingState: string, origin: Coord
 }
 
 export function moveBoardPieces(board: string[][], move: Move): void {
-   const [rows, cols] = [board.length, board[0].length];
+   const cols = board[0].length;
    const { origin, target } = move;
 
    board[target.row][target.col] = board[origin.row][origin.col];
@@ -127,4 +127,16 @@ export function moveBoardPieces(board: string[][], move: Move): void {
          board[target.row][cols - 1] = '';
       }
    }
+}
+
+export function getEnpassantCell(piece: string, move: Move, player: Color): string {
+   const { origin, target } = move;
+   const ranks: string[] = player === 'w' ? [...RANKS].reverse() : RANKS;
+   const files: string[] = player === 'w' ? FILES : [...FILES].reverse();
+
+   if (piece.toLowerCase() !== 'p' || Math.abs(target.row - origin.row) !== 2) return '-';
+
+   if (target.row - origin.row < 0) return `${files[target.col]}${ranks[target.row + 1]}`;
+   
+   return `${files[target.col]}${ranks[target.row - 1]}`;
 }

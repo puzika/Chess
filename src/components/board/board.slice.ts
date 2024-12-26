@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import type { RootState } from "../../store/store";
-import { generateFenPositionFromBoard, getUpdatedCastlingState, moveBoardPieces } from "./board.utils";
+import { generateFenPositionFromBoard, getUpdatedCastlingState, getEnpassantCell, moveBoardPieces } from "./board.utils";
 
 export type Color = 'w' | 'b';
 export type Piece = 'r' | 'n' | 'b' | 'q' | 'k' | 'p' | 'R' | 'N' | 'B' | 'Q' | 'K' | 'P';
@@ -49,10 +49,11 @@ export const boardSlice = createSlice({
          const { moveCoords, player, board } = action.payload;
          const { origin, target } = moveCoords;
 
-         state.halfmove = board[target.row][target.col] !== '' || board[origin.row][origin.col].toLowerCase() !== 'p' ? state.halfmove + 1 : 0;
+         state.halfmove = board[target.row][target.col] !== '' || board[origin.row][origin.col].toLowerCase() === 'p' ? 0 : state.halfmove + 1;
          state.fullmove = state.turn === 'b' ? state.fullmove + 1 : state.fullmove;
          state.turn = state.turn === 'w' ? 'b' : 'w';
          state.castling = getUpdatedCastlingState(state.castling, origin, player);
+         state.enpassant = getEnpassantCell(board[origin.row][origin.col], moveCoords, player);
 
          moveBoardPieces(board, moveCoords);
          state.position = generateFenPositionFromBoard(board, player);

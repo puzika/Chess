@@ -1,4 +1,4 @@
-import { Color, Piece, Coords, Move } from "../components/board/board.slice"
+import { Color, Piece, Coords, Move, FILES, RANKS } from "../components/board/board.slice"
 import { getIdxFromCoords, getCoordsFromIdx } from "../components/board/board.utils";
 
 type Moves = Record<'K' | 'Q' | 'R' | 'B' | 'N' | 'P', (origin: Coords, board: string[][], player: Color) => Coords[]>;
@@ -302,10 +302,42 @@ const getCastlingMoves = (gameState: GameState): Coords[] => {
    return castlingMoves;
 }
 
+const getEnpassantCoords = (enpassant: string, player: Color): Coords => {
+   const ranks: string[] = player === 'w' ? [...RANKS].reverse() : RANKS;
+   const files: string[] = player === 'w' ? FILES : [...FILES].reverse();
+   const [file, rank] = [...enpassant] as [string, string];
+
+   const col: number = files.findIndex(currFile => currFile === file);
+   const row: number = ranks.findIndex(currRank => currRank === rank);
+
+   return {
+      row,
+      col
+   };
+}
+
+const addEnpassant = (pseudoLegalMoves: Map<number, Coords[]>, gameState: GameState): void => {
+   const { enpassant, board, turn, player } = gameState;
+   const enpassantCoords: Coords = getEnpassantCoords(enpassant, player);
+   const { row, col } = enpassantCoords;
+   const enpassantPawnRow: number = (player === 'w' && turn === 'w') || (player === 'b' && turn === 'b') ? row + 1 : row - 1;
+
+   const leftPawn: Coords = { row: enpassantPawnRow, col: col - 1 };
+   const rightPawn: Coords = { row: enpassantPawnRow, col: col + 1 };
+
+   const leftPawnMoves: Coords[] | undefined = pseudoLegalMoves.get(getIdxFromCoords(leftPawn));
+   const rightPawnMoves: Coords[] | undefined = pseudoLegalMoves.get(getIdxFromCoords(rightPawn));
+
+   if (!!leftPawnMoves && board[leftPawn.row][leftPawn.col].toLowerCase() === 'p') leftPawnMoves.push(enpassantCoords);
+   if (!!rightPawnMoves && board[rightPawn.row][rightPawn.col].toLowerCase() === 'p') rightPawnMoves.push(enpassantCoords);
+}
+
 export function getLegalMoves(gameState: GameState): Map<number, Coords[]> {
-   const { board } = gameState;
+   const { board, enpassant } = gameState;
    const legalMoves: Map<number, Coords[]> = new Map();
    const pseudoLegalMoves: Map<number, Coords[]> = getPseudoLegalMoves(gameState);
+   
+   if (enpassant !== '-') addEnpassant(pseudoLegalMoves, gameState);
 
    for (const [pieceIdx, piecePseudoLegalMoves] of pseudoLegalMoves) {
       const origin: Coords = getCoordsFromIdx(pieceIdx);
