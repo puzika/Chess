@@ -149,3 +149,9 @@ export function getEnpassantCell(piece: string, move: Move, player: Color): stri
    
    return `${files[target.col]}${ranks[target.row - 1]}`;
 }
+
+export function isPromotion(target: Coords, board: string[][]): boolean {
+   const { row, col } = target;
+
+   return (row === 0 || row === ROWS - 1) && (board[row][col].toLowerCase() === 'p');
+}

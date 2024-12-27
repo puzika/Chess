@@ -41,6 +41,13 @@ type MovePayload = {
    board: string[][],
 }
 
+type PromotionPayload = {
+   promotion: string,
+   board: string[][],
+   promotionCell: Coords,
+   player: Color
+}
+
 export const boardSlice = createSlice({
    name: 'board',
    initialState,
@@ -57,11 +64,19 @@ export const boardSlice = createSlice({
 
          moveBoardPieces(board, moveCoords);
          state.position = generateFenPositionFromBoard(board, player);
+      },
+
+      promote: (state, action: PayloadAction<PromotionPayload>) => {
+         const { board, promotion, promotionCell, player } = action.payload;
+         const { row, col } = promotionCell;
+         
+         board[row][col] = promotion;
+         state.position = generateFenPositionFromBoard(board, player);
       }
    }
 });
 
-export const { movePlayer } = boardSlice.actions;
+export const { movePlayer, promote } = boardSlice.actions;
 
 export const selectPosition = (state: RootState): string => state.board.position;
 export const selectTurn = (state: RootState): Color => state.board.turn;

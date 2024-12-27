@@ -1,9 +1,9 @@
 import { useState, useMemo, DragEvent, MouseEvent } from 'react';
 import { useAppSelector, useAppDispatch } from '../../store/hooks';
 import { selectPlayer } from '../game/game.slice';
-import { RANKS, FILES, selectPosition, selectTurn, selectCastling, selectEnpassant, movePlayer } from './board.slice';
+import { RANKS, FILES, selectPosition, selectTurn, selectCastling, selectEnpassant, movePlayer, promote } from './board.slice';
 import { getCellColor, getIdxFromCoords } from './board.utils';
-import { generateBoardFromFen, getLegalMovesForPiece, moveHighlight, captureHighlight, checkHighLight } from './board.utils';
+import { generateBoardFromFen, getLegalMovesForPiece, moveHighlight, captureHighlight, checkHighLight, isPromotion } from './board.utils';
 import { pieces } from '../../pieces/pieces.images';
 import { getLegalMoves, getPieceColor, isChecked } from '../../pieces/pieces.moves';
 import type { GameState } from '../../pieces/pieces.moves';
@@ -26,11 +26,12 @@ export default function Board() {
    const files: string[] = player === 'w' ? FILES : [...FILES].reverse();
    const board: string[][] = useMemo(() => player === 'w' ? generateBoardFromFen(position) : generateBoardFromFen(position.split('').reverse().join('')), [turn, player]);
    const [checked, setChecked] = useState<boolean>(false);
+   const [promotionCell, setPromotionCell] = useState<Coords>({ row: -1, col: -1 });
    const [origin, setOrigin] = useState<Coords>({ row: -1, col: -1 });
    const [draggedOver, setDraggedOver] = useState<Coords>({row: -1, col: -1});
 
    const currGameState: GameState = { board, turn, player, castling, enpassant };
-   const allLegalMoves: Map<number, Coords[]> = useMemo(() => getLegalMoves(currGameState), [turn, player]);
+   const allLegalMoves: Map<number, Coords[]> = useMemo(() => getLegalMoves(currGameState), [turn, player, position]);
    const currLegalMoves: Set<number> = getLegalMovesForPiece(origin, allLegalMoves);
 
    const handleDragStart = (e: DragEvent<HTMLImageElement>): void => {
@@ -70,8 +71,10 @@ export default function Board() {
       const moveCoords: Move = { origin, target };
 
       dispatch(movePlayer({board, moveCoords, player}));
-      setOrigin({ row: -1, col: -1});
+      setOrigin({ row: -1, col: -1 });
       setChecked(isChecked(currGameState));
+
+      isPromotion(target, board) && setPromotionCell(target);
    }
 
    const handleClick = (e: MouseEvent<HTMLDivElement>): void => {
@@ -91,6 +94,8 @@ export default function Board() {
          setOrigin({ row: -1, col: -1 });
          setDraggedOver({ row: -1, col: -1 });
          setChecked(isChecked(currGameState));
+
+         isPromotion(target, board) && setPromotionCell(target);
       }
    }
 
@@ -102,6 +107,12 @@ export default function Board() {
 
       if (currLegalMoves.has(getIdxFromCoords({ row, col }))) setDraggedOver({ row, col });
       else if (draggedOver.row !== -1 && draggedOver.col !== -1) setDraggedOver({ row: -1, col: -1 });
+   }
+
+   const handlePromotion = (promotion: string): void => {
+      dispatch(promote({ promotion, promotionCell, board, player}));
+      setPromotionCell({ row: -1, col: -1 });
+      setChecked(isChecked({ ...currGameState, turn: turn === 'w' ? 'b' : 'w' }));
    }
 
    return (
@@ -145,7 +156,9 @@ export default function Board() {
                ))
             ))
          }
-         <Promotion />
+         { 
+            (promotionCell.row !== -1 && promotionCell.col !== -1) && <Promotion promotionHandler={handlePromotion} />
+         }
       </S.Board>
    )
 }

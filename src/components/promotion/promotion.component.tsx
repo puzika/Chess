@@ -4,16 +4,22 @@ import type { Color } from '../board/board.slice';
 import { pieces } from '../../pieces/pieces.images';
 import * as S from './promotion.style';
 
-export default function Promotion() {
+type PromotionProps = {
+   promotionHandler: (piece: string) => void,
+}
+
+export default function Promotion({ promotionHandler }: PromotionProps) {
    const turn: Color = useAppSelector(selectTurn);
-   const promotionPieces: string[] = turn === 'w' ? ['Q', 'R', 'B', 'N'] : ['q', 'r', 'b', 'n'];
+   const promotionPieces: string[] = turn === 'w' ? ['q', 'r', 'b', 'n'] : ['Q', 'R', 'B', 'N'];
    
    return (
       <S.PromotionOverlay>
          <S.Promotion>
             {
                promotionPieces.map(piece => (
-                  <S.PromotionPiece><S.PromotionPieceImg src={pieces[piece as keyof typeof pieces]} /></S.PromotionPiece>
+                  <S.PromotionPiece key={piece} onClick={() => promotionHandler(piece)} >
+                     <S.PromotionPieceImg src={pieces[piece]} />
+                  </S.PromotionPiece>
                ))
             }
          </S.Promotion>
