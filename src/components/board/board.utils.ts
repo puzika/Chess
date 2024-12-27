@@ -114,11 +114,8 @@ export function moveBoardPieces(board: string[][], move: Move): void {
    const cols = board[0].length;
    const { origin, target } = move;
 
-   board[target.row][target.col] = board[origin.row][origin.col];
-   board[origin.row][origin.col] = '';
-
    // if castling
-   if (board[target.row][target.col].toLowerCase() === 'k' && Math.abs(target.col - origin.col) === 2) {
+   if (board[origin.row][origin.col].toLowerCase() === 'k' && Math.abs(target.col - origin.col) === 2) {
       if (target.col - origin.col < 0) {
          board[target.row][target.col + 1] = board[target.row][0];
          board[target.row][0] = '';
@@ -127,6 +124,18 @@ export function moveBoardPieces(board: string[][], move: Move): void {
          board[target.row][cols - 1] = '';
       }
    }
+
+   // if enpassant
+   if (
+      board[origin.row][origin.col].toLowerCase() === 'p' && 
+      target.col !== origin.col &&
+      board[target.row][target.col] === ''
+   ) {
+      board[origin.row][target.col] = '';
+   }
+
+   board[target.row][target.col] = board[origin.row][origin.col];
+   board[origin.row][origin.col] = '';
 }
 
 export function getEnpassantCell(piece: string, move: Move, player: Color): string {
