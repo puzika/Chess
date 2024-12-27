@@ -7,6 +7,7 @@ type CellProps = {
 }
 
 export const Board = styled.div`
+   position: relative;
    width: 100%;
    display: grid;
    grid-template-columns: repeat(8, 1fr);

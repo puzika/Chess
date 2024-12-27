@@ -1,7 +1,7 @@
 import { useState, useMemo, DragEvent, MouseEvent } from 'react';
 import { useAppSelector, useAppDispatch } from '../../store/hooks';
 import { selectPlayer } from '../game/game.slice';
-import { RANKS, FILES, selectPosition, selectTurn, selectCastling, selectEnpassant, selectHalfMove, selectFullMove, movePlayer } from './board.slice';
+import { RANKS, FILES, selectPosition, selectTurn, selectCastling, selectEnpassant, movePlayer } from './board.slice';
 import { getCellColor, getIdxFromCoords } from './board.utils';
 import { generateBoardFromFen, getLegalMovesForPiece, moveHighlight, captureHighlight, checkHighLight } from './board.utils';
 import { pieces } from '../../pieces/pieces.images';
@@ -9,6 +9,7 @@ import { getLegalMoves, getPieceColor, isChecked } from '../../pieces/pieces.mov
 import type { GameState } from '../../pieces/pieces.moves';
 import type { Color, Piece, Move } from './board.slice';
 import type { Coords } from './board.slice';
+import Promotion from '../promotion/promotion.component';
 import * as S from './board.style';
 import * as svar from '../../variables.style';
 
@@ -20,10 +21,6 @@ export default function Board() {
    const position: string = useAppSelector(selectPosition);
    const castling: string = useAppSelector(selectCastling);
    const enpassant: string = useAppSelector(selectEnpassant);
-   const halfmove: number = useAppSelector(selectHalfMove);
-   const fullmove: number = useAppSelector(selectFullMove);
-
-   console.log(position, turn, castling, enpassant, halfmove, fullmove);
 
    const ranks: string[] = player === 'w' ? [...RANKS].reverse() : RANKS;
    const files: string[] = player === 'w' ? FILES : [...FILES].reverse();
@@ -148,6 +145,7 @@ export default function Board() {
                ))
             ))
          }
+         <Promotion />
       </S.Board>
    )
 }
