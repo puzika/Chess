@@ -273,9 +273,14 @@ const getCastlingMoves = (gameState: GameState): Coords[] => {
       [{ row: rows - 1, col: cols - 1 }, player === 'w' ? { row: rows - 1, col: 4 } : { row: rows - 1, col: 3 }, player === 'w' ? 'K' : 'q']
    ];
 
-   const areEmpty = (start: Coords, end: Coords): boolean => {
-      const { row, col: startCol } = start;
-      const { col: endCol } = end;
+   const areEmpty = (cellOne: Coords, cellTwo: Coords): boolean => {
+      let startCell: Coords;
+      let endCell: Coords;
+
+      [startCell, endCell] = (cellTwo.col - cellOne.col > 0) ? [cellOne, cellTwo] : [cellTwo, cellOne];
+
+      const { row, col: startCol } = startCell;
+      const { col: endCol } = endCell;
 
       for (let i: number = startCol + 1; i < endCol; i++) {
          if (board[row][i] !== '') return false;
