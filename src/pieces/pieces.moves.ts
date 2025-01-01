@@ -248,8 +248,8 @@ const willBeChecked = (move: Move, gameState: GameState): boolean => {
 }
 
 export const isChecked = (gameState: GameState): boolean => {
-   const { board } = gameState;
-   const pseudoLegalMoves: Map<number, Coords[]> = getPseudoLegalMoves(gameState);
+   const { board, turn } = gameState;
+   const pseudoLegalMoves: Map<number, Coords[]> = getPseudoLegalMoves({ ...gameState, turn: turn === 'w' ? 'b' : 'w'});
 
    for (const [_, piecePseudoLegalMoves] of pseudoLegalMoves) {
       if (piecePseudoLegalMoves.some(m => board[m.row][m.col].toLowerCase() === 'k')) return true;
