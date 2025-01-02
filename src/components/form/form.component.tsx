@@ -25,6 +25,7 @@ export default function Form() {
 
       const game: Game = {
          type: 'computer',
+         outcomeMessage: '',
          time,
          depth,
          player,

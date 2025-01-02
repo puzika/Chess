@@ -1,7 +1,9 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { PayloadAction } from "@reduxjs/toolkit";
 import { RootState } from "../../store/store";
-import { Color } from "../board/board.slice";
+import type { Color } from "../board/board.slice";
+import type { GameOutcome, GameData } from "./game.utils";
+import { getGameOutcome } from "./game.utils";
 
 type GameType = 'computer' | 'analysis';
 
@@ -10,6 +12,7 @@ export type Game = {
    player: Color,
    time: number,
    depth: number,
+   outcomeMessage: string,
 };
 
 const initialState: Game = {
@@ -17,6 +20,7 @@ const initialState: Game = {
    player: 'w',
    time: Infinity,
    depth: 10,
+   outcomeMessage: '',
 }
 
 export const gameSlice = createSlice({
@@ -25,17 +29,36 @@ export const gameSlice = createSlice({
    reducers: {
       startGame: (_, action: PayloadAction<Game>) => {
          return action.payload;
-      }
+      },
+
+      setOutcomeMessage: (state, action: PayloadAction<GameData>) => {
+         const { turn } = action.payload;
+         const outcomeMessages: Record<GameOutcome, string> = {
+            "checkmate": `${turn === 'w' ? 'White' : 'Black'} wins by checkmate`,
+            "stalemate": 'Draw by stalemate',
+            "inssuficient material": 'Draw by insufficient material',
+            "time control": `${turn === 'w' ? 'White' : 'Black'} wins on time`,
+            "-": '',
+         };
+
+         const outcome: GameOutcome = getGameOutcome(action.payload);
+
+         console.log(action.payload, outcome);
+
+         state.outcomeMessage = outcomeMessages[outcome];
+      },
    },
 });
 
 export const {
-   startGame
+   startGame,
+   setOutcomeMessage,
 } = gameSlice.actions;
 
 export const selectType = (state: RootState): GameType => state.game.type;
 export const selectPlayer = (state: RootState): Color => state.game.player;
 export const selectTime = (state: RootState): number => state.game.time;
 export const selectDepth = (state: RootState): number => state.game.depth;
+export const selectOutcomeMessage = (state: RootState): string => state.game.outcomeMessage; 
 
 export default gameSlice.reducer;

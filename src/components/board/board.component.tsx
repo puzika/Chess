@@ -1,14 +1,15 @@
 import { useState, useEffect, useMemo, DragEvent, MouseEvent } from 'react';
 import { useAppSelector, useAppDispatch } from '../../store/hooks';
-import { selectPlayer } from '../game/game.slice';
+import { selectPlayer, selectOutcomeMessage, setOutcomeMessage } from '../game/game.slice';
 import { RANKS, FILES, selectPosition, selectTurn, selectCastling, selectEnpassant, movePlayer, promote } from './board.slice';
 import { getCellColor, getIdxFromCoords } from './board.utils';
-import { generateBoardFromFen, getLegalMovesForPiece, moveHighlight, captureHighlight, checkHighLight, isPromotion } from './board.utils';
+import { generateBoardFromFen, getLegalMovesForPiece, moveHighlight, captureHighlight, checkHighLight, isPromotion, hasLegalMoves } from './board.utils';
 import { pieces } from '../../pieces/pieces.images';
 import { getLegalMoves, getPieceColor, isChecked } from '../../pieces/pieces.moves';
 import type { GameState } from '../../pieces/pieces.moves';
 import type { Color, Piece, Move } from './board.slice';
 import type { Coords } from './board.slice';
+import type { GameData } from '../game/game.utils';
 import Promotion from '../promotion/promotion.component';
 import * as S from './board.style';
 import * as svar from '../../variables.style';
@@ -21,6 +22,7 @@ export default function Board() {
    const position: string = useAppSelector(selectPosition);
    const castling: string = useAppSelector(selectCastling);
    const enpassant: string = useAppSelector(selectEnpassant);
+   const outcomeMessage: string = useAppSelector(selectOutcomeMessage);
 
    const ranks: string[] = player === 'w' ? [...RANKS].reverse() : RANKS;
    const files: string[] = player === 'w' ? FILES : [...FILES].reverse();
@@ -35,7 +37,15 @@ export default function Board() {
    const currLegalMoves: Set<number> = getLegalMovesForPiece(origin, allLegalMoves);
 
    useEffect(() => {
-      setChecked(isChecked(currGameState));
+      const check = isChecked(currGameState);
+      const gameData: GameData = {
+         isChecked: check,
+         hasLegalMoves: hasLegalMoves(allLegalMoves),
+         turn,
+      };
+
+      setChecked(check);
+      dispatch(setOutcomeMessage(gameData));
    }, [position, turn, player]);
 
    const handleDragStart = (e: DragEvent<HTMLImageElement>): void => {

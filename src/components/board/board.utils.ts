@@ -155,3 +155,11 @@ export function isPromotion(target: Coords, piece: string): boolean {
 
    return (row === 0 || row === ROWS - 1) && (piece.toLowerCase() === 'p');
 }
+
+export function hasLegalMoves(allLegalMoves: Map<number, Coords[]>) {
+   for (const [_, pieceLegalMoves] of allLegalMoves) {
+      if (pieceLegalMoves.length > 0) return true;
+   }
+
+   return false;
+}
