@@ -48,19 +48,25 @@ const getMovesPawn = (origin: Coords, board: string[][], player: Color): Coords[
    const pawnMoves: Coords[] = [];
    const { row, col }: Coords = origin;
    const pawnColor: Color = getPieceColor(board[row][col] as Piece);
+   const direction: number = (player === 'w' && pawnColor === 'w') || (player === 'b' && pawnColor === 'b') ? -1 : 1;
+   const possiblePawnMoves: Coords[] = [
+      { row: row + direction, col },
+      { row: row + direction * 2, col },
+      { row: row + direction, col: col - 1 },
+      { row: row + direction, col: col + 1 },
+   ];
 
-   if (pawnColor === player) {
-      if (isOnBoard({ row: row - 1, col }) && board[row - 1][col] === '') pawnMoves.push(constructCoords(row - 1, col));
-      if (row === 6 && board[row - 1][col] === '' && board[row - 2][col] === '') pawnMoves.push(constructCoords(row - 2, col));
-      if (isOnBoard({ row: row - 1, col: col - 1 }) && board[row - 1][col - 1] && canTake(board[row - 1][col - 1], board[row][col])) pawnMoves.push(constructCoords(row - 1, col - 1));
-      if (isOnBoard({ row: row - 1, col: col + 1 }) && board[row - 1][col + 1] && canTake(board[row - 1][col + 1], board[row][col])) pawnMoves.push(constructCoords(row - 1, col + 1));
-   }
+   for (const { row: moveRow, col: moveCol } of possiblePawnMoves) {
+      const verticalMoveDist: number = Math.abs(moveRow - row);
+      const doubleMoveMidRow: number = (moveRow + row) / 2;
 
-   if (pawnColor !== player) {
-      if (isOnBoard({ row: row + 1, col }) && board[row + 1][col] === '') pawnMoves.push(constructCoords(row + 1, col));
-      if (row === 1 && board[row + 1][col] === '' && board[row + 2][col] === '') pawnMoves.push(constructCoords(row + 2, col));
-      if (isOnBoard({ row: row + 1, col: col - 1 }) && board[row + 1][col - 1] && canTake(board[row + 1][col - 1], board[row][col])) pawnMoves.push(constructCoords(row + 1, col - 1));
-      if (isOnBoard({ row: row + 1, col: col + 1 }) && board[row + 1][col + 1] && canTake(board[row + 1][col + 1], board[row][col])) pawnMoves.push(constructCoords(row + 1, col + 1));
+      if (!isOnBoard({ row: moveRow, col: moveCol })) continue;
+
+      if (
+         (moveCol === col && verticalMoveDist === 1 && board[moveRow][moveCol] === '') ||
+         (moveCol === col && verticalMoveDist === 2 && board[moveRow][moveCol] === '' && board[doubleMoveMidRow][moveCol] === '') ||
+         (moveCol !== col && board[moveRow][moveCol] !== '' && canTake(board[row][col], board[moveRow][moveCol])) 
+      ) pawnMoves.push({ row: moveRow, col: moveCol });
    }
 
    return pawnMoves;
