@@ -40,6 +40,7 @@ export default function Board() {
       const check = isChecked(currGameState);
       const gameData: GameData = {
          isChecked: check,
+         board,
          hasLegalMoves: hasLegalMoves(allLegalMoves),
          turn,
       };
