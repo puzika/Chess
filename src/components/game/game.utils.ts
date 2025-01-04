@@ -6,23 +6,24 @@ export type GameData = {
    hasLegalMoves: boolean,
    turn: Color,
    board: string[][],
+   isTimeOver: boolean,
 }
 
 export type GameOutcome = 'checkmate' | 'stalemate' | 'inssuficient material' | 'time control' | '-';
 
-export function isCheckmate(gameData: GameData): boolean {
+function isCheckmate(gameData: GameData): boolean {
    const { isChecked, hasLegalMoves } = gameData;
 
    return isChecked && !hasLegalMoves;
 }
 
-export function isStalemate(gameData: GameData): boolean {
+function isStalemate(gameData: GameData): boolean {
    const { isChecked, hasLegalMoves } = gameData;
 
    return !isChecked && !hasLegalMoves;
 }
 
-export function isInsufficientMaterial(gameData: GameData): boolean {
+function isInsufficientMaterial(gameData: GameData): boolean {
    const { board } = gameData;
    const [rows, cols]: [number, number] = [board.length, board[0].length]; 
    const possibleScenarios: [string, string][] = [['k', 'k'], ['k', 'bk'], ['bk', 'k'], ['k', 'kn'], ['kn', 'k'], ['bk', 'bk']];
@@ -81,10 +82,17 @@ export function isInsufficientMaterial(gameData: GameData): boolean {
    return false;
 }
 
-export function getGameOutcome(gameDate: GameData): GameOutcome {
-   if (isCheckmate(gameDate)) return 'checkmate';
-   if (isStalemate(gameDate)) return 'stalemate';
-   if (isInsufficientMaterial(gameDate)) return 'inssuficient material';
+function isTimeControl(gameData: GameData): boolean {
+   const { isTimeOver } = gameData;
+
+   return isTimeOver;
+}
+
+export function getGameOutcome(gameData: GameData): GameOutcome {
+   if (isCheckmate(gameData)) return 'checkmate';
+   if (isStalemate(gameData)) return 'stalemate';
+   if (isInsufficientMaterial(gameData)) return 'inssuficient material';
+   if (isTimeControl(gameData)) return 'time control';
 
    return '-';
 }

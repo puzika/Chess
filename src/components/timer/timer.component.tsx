@@ -1,8 +1,10 @@
-import { useEffect, useState, useRef, MutableRefObject, Dispatch, SetStateAction } from 'react';
+import { useEffect, useState, useContext, useRef, MutableRefObject, Dispatch, SetStateAction } from 'react';
 import { useAppSelector } from '../../store/hooks';
 import { selectPlayer, selectTime, selectDepth } from '../game/game.slice';
 import ColorCard from '../color-card/color-card.component';
 import { selectTurn } from '../board/board.slice';
+import { TimerContext } from './timer.context';
+import type { TimerContextType } from './timer.context';
 import type { Color } from '../board/board.slice';
 import type { CardColor } from '../color-card/color-card.component';
 import * as S from './timer.style';
@@ -31,6 +33,7 @@ export default function Timer() {
    const currTimeComputer = useRef<number>(minutesToMilliseconds(startTime));
    const [formattedTimePlayer, setFormattedTimePlayer] = useState<string>(formatTime(startTime));
    const [formattedTimeComputer, setFormattedTimeComputer] = useState<string>(formatTime(startTime));
+   const { setIsTimerOver } = useContext<TimerContextType>(TimerContext);
 
    const startTimer = (currTime: MutableRefObject<number>, setFormattedTime: Dispatch<SetStateAction<string>>): number => {
       const endTime: number = new Date().getTime() + currTime.current;
@@ -42,6 +45,7 @@ export default function Timer() {
             setFormattedTime(formatTime(currTime.current));
             countdownId.current = requestAnimationFrame(countdown);
          } else {
+            setIsTimerOver(true);
             cancelAnimationFrame(countdownId.current!);
          }
       }

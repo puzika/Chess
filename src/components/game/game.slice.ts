@@ -34,17 +34,14 @@ export const gameSlice = createSlice({
       setOutcomeMessage: (state, action: PayloadAction<GameData>) => {
          const { turn } = action.payload;
          const outcomeMessages: Record<GameOutcome, string> = {
-            "checkmate": `${turn === 'w' ? 'White' : 'Black'} wins by checkmate`,
+            "checkmate": `${turn === 'w' ? 'Black' : 'White'} wins by checkmate`,
             "stalemate": 'Draw by stalemate',
             "inssuficient material": 'Draw by insufficient material',
-            "time control": `${turn === 'w' ? 'White' : 'Black'} wins on time`,
+            "time control": `${turn === 'w' ? 'Black' : 'White'} wins on time`,
             "-": '',
          };
 
          const outcome: GameOutcome = getGameOutcome(action.payload);
-
-         console.log(action.payload, outcome);
-
          state.outcomeMessage = outcomeMessages[outcome];
       },
    },
