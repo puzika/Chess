@@ -5,28 +5,32 @@ type TimerProps = {
    $isTurn?: boolean,
 }
 
-export const TimerContainer = styled.div`
+export const Container = styled.div`
    position: absolute;
    top: 50%;
    right: 0;
    translate: 100% -50%;
    width: 50%;
-   background-color: ${svar.clrPrimary};
+   overflow: hidden;
+`;
+
+export const TimerContainer = styled.div`
+   display: flex;
+   flex-direction: column;
+   gap: .5rem;
    border-radius: 0 2rem 2rem 0;
    overflow: hidden;
+   margin-bottom: 1rem;
 `;
 
 export const Timer = styled.div<TimerProps>`
    display: flex;
    align-items: center;
    gap: 2rem;
-   padding: 2rem;
+   background-color: ${svar.clrPrimary};
    color: ${({$isTurn}) => $isTurn ? svar.clrHighlight : 'inherit'};
+   padding: 2rem;
    box-shadow: ${({$isTurn}) => $isTurn ? `inset 0 0 2rem ${svar.clrHighlight}` : 'none'};
-
-   &:not(:last-child) {
-      border-bottom: .5rem solid ${svar.clrBase}; 
-   }
 `;
 
 export const TimerData = styled.div`

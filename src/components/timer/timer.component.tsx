@@ -2,6 +2,7 @@ import { useEffect, useState, useContext, useRef, MutableRefObject, Dispatch, Se
 import { useAppSelector } from '../../store/hooks';
 import { selectPlayer, selectTime, selectDepth } from '../game/game.slice';
 import ColorCard from '../color-card/color-card.component';
+import Button from '../button/button.component';
 import { selectTurn } from '../board/board.slice';
 import { TimerContext } from './timer.context';
 import type { TimerContextType } from './timer.context';
@@ -70,21 +71,24 @@ export default function Timer() {
    }, [turn, startTime]);
 
    return (
-      <S.TimerContainer>
-         <S.Timer $isTurn={turn !== player}>
-            <ColorCard chosen={turn !== player} color={colorComputer} width={'40%'} />
-            <S.TimerData>
-               <S.Time>{formattedTimeComputer}</S.Time>
-               <S.PlayerName>AI depth {depth}</S.PlayerName>
-            </S.TimerData>
-         </S.Timer>
-         <S.Timer $isTurn={turn === player}>
-            <ColorCard chosen={turn === player} color={colorPlayer} width={'40%'} />
-            <S.TimerData>
-               <S.Time>{formattedTimePlayer}</S.Time>
-               <S.PlayerName>You</S.PlayerName>
-            </S.TimerData>
-         </S.Timer>
-      </S.TimerContainer>
+      <S.Container>
+         <S.TimerContainer>
+            <S.Timer $isTurn={turn !== player}>
+               <ColorCard chosen={turn !== player} color={colorComputer} width={'40%'} />
+               <S.TimerData>
+                  <S.Time>{formattedTimeComputer}</S.Time>
+                  <S.PlayerName>AI depth {depth}</S.PlayerName>
+               </S.TimerData>
+            </S.Timer>
+            <S.Timer $isTurn={turn === player}>
+               <ColorCard chosen={turn === player} color={colorPlayer} width={'40%'} />
+               <S.TimerData>
+                  <S.Time>{formattedTimePlayer}</S.Time>
+                  <S.PlayerName>You</S.PlayerName>
+               </S.TimerData>
+            </S.Timer>
+         </S.TimerContainer>
+         <Button>Resign</Button>
+      </S.Container>
    )
 }
