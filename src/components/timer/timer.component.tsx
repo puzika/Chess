@@ -34,7 +34,7 @@ export default function Timer() {
    const currTimeComputer = useRef<number>(minutesToMilliseconds(startTime));
    const [formattedTimePlayer, setFormattedTimePlayer] = useState<string>(formatTime(startTime));
    const [formattedTimeComputer, setFormattedTimeComputer] = useState<string>(formatTime(startTime));
-   const { setIsTimerOver } = useContext<TimerContextType>(TimerContext);
+   const { setIsTimerOver, setResigned } = useContext<TimerContextType>(TimerContext);
 
    const startTimer = (currTime: MutableRefObject<number>, setFormattedTime: Dispatch<SetStateAction<string>>): number => {
       const endTime: number = new Date().getTime() + currTime.current;
@@ -88,7 +88,7 @@ export default function Timer() {
                </S.TimerData>
             </S.Timer>
          </S.TimerContainer>
-         <Button>Resign</Button>
+         <Button clickHandler={() => setResigned(true)}>Resign</Button>
       </S.Container>
    )
 }

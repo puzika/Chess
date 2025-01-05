@@ -18,7 +18,7 @@ import * as svar from '../../variables.style';
 
 export default function Board() {
    const dispatch = useAppDispatch();
-   const { isTimeOver } = useContext<TimerContextType>(TimerContext);
+   const { isTimeOver, resigned } = useContext<TimerContextType>(TimerContext);
 
    const player: Color = useAppSelector(selectPlayer);
    const turn: Color = useAppSelector(selectTurn);
@@ -42,18 +42,19 @@ export default function Board() {
    const currLegalMoves: Set<number> = getLegalMovesForPiece(origin, allLegalMoves);
 
    useEffect(() => {
-      if (isTimeOver) {
+      if (isTimeOver || resigned) {
          const gameData: GameData = {
             isTimeOver,
             isChecked: checked,
             board,
             hasLegalMoves: hasLegalMoves(allLegalMoves),
             turn,
+            resigned,
          };
 
          dispatch(setOutcomeMessage(gameData));
       }
-   }, [isTimeOver]);
+   }, [isTimeOver, resigned]);
 
    useEffect(() => {
       const check = isChecked(currGameState);
@@ -63,6 +64,7 @@ export default function Board() {
          board,
          hasLegalMoves: hasLegalMoves(allLegalMoves),
          turn,
+         resigned,
       };
 
       setChecked(check);

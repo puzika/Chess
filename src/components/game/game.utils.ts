@@ -7,9 +7,10 @@ export type GameData = {
    turn: Color,
    board: string[][],
    isTimeOver: boolean,
+   resigned: boolean,
 }
 
-export type GameOutcome = 'checkmate' | 'stalemate' | 'inssuficient material' | 'time control' | '-';
+export type GameOutcome = 'checkmate' | 'stalemate' | 'inssuficient material' | 'time control' | 'resignation' | '-';
 
 function isCheckmate(gameData: GameData): boolean {
    const { isChecked, hasLegalMoves } = gameData;
@@ -88,11 +89,18 @@ function isTimeControl(gameData: GameData): boolean {
    return isTimeOver;
 }
 
+function resigned(gameData: GameData): boolean {
+   const { resigned } = gameData;
+   
+   return resigned; 
+}
+
 export function getGameOutcome(gameData: GameData): GameOutcome {
    if (isCheckmate(gameData)) return 'checkmate';
    if (isStalemate(gameData)) return 'stalemate';
    if (isInsufficientMaterial(gameData)) return 'inssuficient material';
    if (isTimeControl(gameData)) return 'time control';
+   if (resigned(gameData)) return 'resignation';
 
    return '-';
 }
