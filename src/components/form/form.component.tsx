@@ -7,6 +7,7 @@ import { startGame } from '../game/game.slice';
 import ExitButton from '../exit-button/exit-button.component';
 import Button from '../button/button.component';
 import ColorCard from '../color-card/color-card.component';
+import Overlay from '../overlay/overlay.component';
 import * as S from './form.style';
 
 export default function Form() {
@@ -66,7 +67,7 @@ export default function Form() {
    }
 
    return (
-      <S.Overlay className='overlay' $isOpen={formOpen} onClick={handleClickOverlay}>
+      <Overlay isOpen={formOpen} clickHandler={handleClickOverlay}>
          <S.Form onSubmit={handleSubmit}>
             <ExitButton closeHandler={handleClickClose} />
             <S.FormTitle>Play vs computer</S.FormTitle>
@@ -90,6 +91,6 @@ export default function Form() {
             </S.FormItem>
             <Button>Start game</Button>
          </S.Form>
-      </S.Overlay>
+      </Overlay>
    )
 }

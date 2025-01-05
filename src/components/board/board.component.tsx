@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useContext, DragEvent, MouseEvent } from 'react';
 import { useAppSelector, useAppDispatch } from '../../store/hooks';
-import { selectPlayer, selectOutcomeMessage, setOutcomeMessage } from '../game/game.slice';
+import { selectPlayer, setOutcomeMessage } from '../game/game.slice';
 import { RANKS, FILES, selectPosition, selectTurn, selectCastling, selectEnpassant, movePlayer, promote } from './board.slice';
 import { getCellColor, getIdxFromCoords } from './board.utils';
 import { generateBoardFromFen, getLegalMovesForPiece, moveHighlight, captureHighlight, checkHighLight, isPromotion, hasLegalMoves } from './board.utils';
@@ -25,9 +25,6 @@ export default function Board() {
    const position: string = useAppSelector(selectPosition);
    const castling: string = useAppSelector(selectCastling);
    const enpassant: string = useAppSelector(selectEnpassant);
-   const outcomeMessage: string = useAppSelector(selectOutcomeMessage);
-
-   console.log(outcomeMessage);
 
    const ranks: string[] = player === 'w' ? [...RANKS].reverse() : RANKS;
    const files: string[] = player === 'w' ? FILES : [...FILES].reverse();

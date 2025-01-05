@@ -3,7 +3,7 @@ import * as S from './button.style';
 
 type ButtonProps = {
    children: ReactNode,
-   clickHandler?: (e?: MouseEvent<HTMLButtonElement>) => void,
+   clickHandler?: ((e: MouseEvent<HTMLButtonElement>) => void) | (() => void),
 }
 
 export default function Button({ children, clickHandler }: ButtonProps) {
