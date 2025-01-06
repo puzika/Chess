@@ -1,5 +1,6 @@
 import { useAppSelector } from "../../store/hooks"
-import { selectOutcomeMessage } from "../../components/game/game.slice"
+import { selectOutcomeMessage, selectGameState } from "../../components/game/game.slice"
+import type { GameState } from "../../components/game/game.slice"
 import GameContainer from "../../components/game/game.component"
 import Board from "../../components/board/board.component"
 import Form from "../../components/form/form.component"
@@ -9,10 +10,11 @@ import Popup from "../../components/popup/popup.component"
 
 export default function ComputerRoute() {
    const outcomeMessage: string = useAppSelector(selectOutcomeMessage);
+   const gameState: GameState = useAppSelector(selectGameState);
 
    return (
       <>
-         <Form />
+         { gameState === 'YET_TO_BEGIN' && <Form /> }
          { outcomeMessage !== '' && <Popup message={outcomeMessage} /> }
          <GameContainer>
             <TimerProvider>

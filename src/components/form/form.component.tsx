@@ -25,6 +25,7 @@ export default function Form() {
       else player = Math.random() < .5 ? 'w' : 'b';
 
       const game: Game = {
+         gameState: 'IN_PROGRESS',
          type: 'computer',
          outcomeMessage: '',
          time,

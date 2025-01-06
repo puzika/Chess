@@ -7,7 +7,7 @@ import { generateBoardFromFen, getLegalMovesForPiece, moveHighlight, captureHigh
 import { pieces } from '../../pieces/pieces.images';
 import { getLegalMoves, getPieceColor, isChecked } from '../../pieces/pieces.moves';
 import { TimerContext } from '../timer/timer.context';
-import type { GameState } from '../../pieces/pieces.moves';
+import type { MoveData } from '../../pieces/pieces.moves';
 import type { Color, Piece, Move } from './board.slice';
 import type { Coords } from './board.slice';
 import type { GameData } from '../game/game.utils';
@@ -34,8 +34,8 @@ export default function Board() {
    const [origin, setOrigin] = useState<Coords>({ row: -1, col: -1 });
    const [draggedOver, setDraggedOver] = useState<Coords>({row: -1, col: -1});
 
-   const currGameState: GameState = { board, turn, player, castling, enpassant };
-   const allLegalMoves: Map<number, Coords[]> = useMemo(() => getLegalMoves(currGameState), [turn, player, position]);
+   const currMoveData: MoveData = { board, turn, player, castling, enpassant };
+   const allLegalMoves: Map<number, Coords[]> = useMemo(() => getLegalMoves(currMoveData), [turn, player, position]);
    const currLegalMoves: Set<number> = getLegalMovesForPiece(origin, allLegalMoves);
 
    useEffect(() => {
@@ -54,7 +54,7 @@ export default function Board() {
    }, [isTimeOver, resigned]);
 
    useEffect(() => {
-      const check = isChecked(currGameState);
+      const check = isChecked(currMoveData);
       const gameData: GameData = {
          isTimeOver,
          isChecked: check,

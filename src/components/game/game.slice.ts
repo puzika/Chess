@@ -6,6 +6,7 @@ import type { GameOutcome, GameData } from "./game.utils";
 import { getGameOutcome } from "./game.utils";
 
 type GameType = 'computer' | 'analysis';
+export type GameState = 'YET_TO_BEGIN' | 'IN_PROGRESS' | 'FINISHED';
 
 export type Game = {
    type: GameType,
@@ -13,6 +14,7 @@ export type Game = {
    time: number,
    depth: number,
    outcomeMessage: string,
+   gameState: GameState, 
 };
 
 const initialState: Game = {
@@ -21,6 +23,7 @@ const initialState: Game = {
    time: Infinity,
    depth: 10,
    outcomeMessage: '',
+   gameState: 'YET_TO_BEGIN',
 }
 
 export const gameSlice = createSlice({
@@ -58,6 +61,7 @@ export const selectType = (state: RootState): GameType => state.game.type;
 export const selectPlayer = (state: RootState): Color => state.game.player;
 export const selectTime = (state: RootState): number => state.game.time;
 export const selectDepth = (state: RootState): number => state.game.depth;
-export const selectOutcomeMessage = (state: RootState): string => state.game.outcomeMessage; 
+export const selectOutcomeMessage = (state: RootState): string => state.game.outcomeMessage;
+export const selectGameState = (state: RootState): GameState => state.game.gameState;
 
 export default gameSlice.reducer;
