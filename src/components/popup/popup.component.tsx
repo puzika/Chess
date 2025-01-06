@@ -1,4 +1,7 @@
 import { useState } from 'react';
+import { useAppDispatch } from '../../store/hooks';
+import { setGameState } from '../game/game.slice';
+import { initialize } from '../board/board.slice';
 import Overlay from '../overlay/overlay.component';
 import ExitButton from '../exit-button/exit-button.component';
 import Button from '../button/button.component';
@@ -9,19 +12,22 @@ type PopupProps = {
 }
 
 export default function Popup({ message }: PopupProps) {
+   const dispatch = useAppDispatch();
    const [isOpen, setIsOpen] = useState<boolean>(true);
 
-   const close = () => {
+   const restart = () => {
+      dispatch(setGameState('YET_TO_BEGIN'));
+      dispatch(initialize());
       setIsOpen(false);
    }
 
    return (
       <Overlay isOpen={isOpen} clickHandler={close}>
          <S.Popup>
-            <ExitButton closeHandler={close} />
+            <ExitButton closeHandler={restart} />
             <S.PopupMessage>{message}</S.PopupMessage>
             <S.Buttons>
-               <Button>Play again</Button>
+               <Button clickHandler={restart}>Play again</Button>
                <Button>Analyze</Button>
             </S.Buttons>
          </S.Popup>

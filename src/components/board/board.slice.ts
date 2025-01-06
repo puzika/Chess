@@ -72,11 +72,15 @@ export const boardSlice = createSlice({
          
          board[row][col] = promotion;
          state.position = generateFenPositionFromBoard(board, player);
+      },
+
+      initialize: () => {
+         return initialState;
       }
    }
 });
 
-export const { movePlayer, promote } = boardSlice.actions;
+export const { movePlayer, promote, initialize } = boardSlice.actions;
 
 export const selectPosition = (state: RootState): string => state.board.position;
 export const selectTurn = (state: RootState): Color => state.board.turn;

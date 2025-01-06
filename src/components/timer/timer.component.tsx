@@ -68,7 +68,7 @@ export default function Timer() {
 
       setFormattedTimePlayer(formatTime(currTimePlayer.current));
       setFormattedTimeComputer(formatTime(currTimeComputer.current));
-   }, [startTimePlayer, startTimeComputer]);
+   }, [gameState, startTimePlayer, startTimeComputer]);
 
    useEffect(() => {
       countdownId.current = player === turn ? 
@@ -76,7 +76,11 @@ export default function Timer() {
          startTimer(currTimeComputer, setFormattedTimeComputer);
 
       return () => cancelAnimationFrame(countdownId.current!);
-   }, [turn, startTimePlayer, startTimeComputer]);
+   }, [turn, gameState, startTimePlayer, startTimeComputer]);
+
+   useEffect(() => {
+      if (gameState !== 'FINISHED') setResigned(false);
+   }, [gameState]);
 
    if (gameState !== 'IN_PROGRESS' && !!countdownId.current) {
       cancelAnimationFrame(countdownId.current);

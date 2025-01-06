@@ -1,9 +1,9 @@
-import { useState, MouseEvent, ChangeEvent, FormEvent } from 'react';
-import { useAppDispatch } from '../../store/hooks';
+import { useState, useEffect, MouseEvent, ChangeEvent, FormEvent } from 'react';
+import { useAppDispatch, useAppSelector } from '../../store/hooks';
+import { startGame, selectGameState } from '../game/game.slice';
 import type { Color } from '../board/board.slice';
 import type { CardColor } from '../color-card/color-card.component';
-import type { Game } from '../game/game.slice';
-import { startGame } from '../game/game.slice';
+import type { Game, GameState } from '../game/game.slice';
 import ExitButton from '../exit-button/exit-button.component';
 import Button from '../button/button.component';
 import ColorCard from '../color-card/color-card.component';
@@ -12,10 +12,17 @@ import * as S from './form.style';
 
 export default function Form() {
    const dispatch = useAppDispatch();
+   const gameState: GameState = useAppSelector(selectGameState);
+
    const [formOpen, setFormOpen] = useState<boolean>(true);
    const [time, setTime] = useState<number>(10);
    const [depth, setDepth] = useState<number>(10);
    const [cardColor, setCardColor] = useState<CardColor>('random');
+
+   useEffect(() => {
+      if (gameState === 'YET_TO_BEGIN') setFormOpen(true);
+      else setFormOpen(false);
+   }, [gameState])
 
    const start = (): void => {
       let player: Color;
@@ -51,21 +58,18 @@ export default function Form() {
       if (!target.classList.contains('overlay')) return;
 
       start();
-      setFormOpen(false);
    }
 
    const handleClickClose = (e: MouseEvent<HTMLButtonElement>): void => {
       e.preventDefault();
 
       start();
-      setFormOpen(false);
    }
 
    const handleSubmit = (e: FormEvent<HTMLFormElement>): void => {
       e.preventDefault();
 
       start();
-      setFormOpen(false);
    }
 
    return (

@@ -60,6 +60,10 @@ export const gameSlice = createSlice({
 
          state.timePlayer = playerMinutes;
          state.timeComputer = computerMinutes;
+      },
+
+      setGameState: (state, action: PayloadAction<GameState>) => {
+         state.gameState = action.payload;
       }
    },
 });
@@ -68,6 +72,7 @@ export const {
    startGame,
    setOutcomeMessage,
    setTime,
+   setGameState,
 } = gameSlice.actions;
 
 export const selectType = (state: RootState): GameType => state.game.type;
