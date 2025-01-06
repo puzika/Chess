@@ -28,7 +28,8 @@ export default function Form() {
          gameState: 'IN_PROGRESS',
          type: 'computer',
          outcomeMessage: '',
-         time,
+         timePlayer: time,
+         timeComputer: time,
          depth,
          player,
       }

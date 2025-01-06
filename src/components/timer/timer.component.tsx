@@ -1,6 +1,6 @@
 import { useEffect, useState, useContext, useRef, MutableRefObject, Dispatch, SetStateAction } from 'react';
-import { useAppSelector } from '../../store/hooks';
-import { selectPlayer, selectTime, selectDepth } from '../game/game.slice';
+import { useAppSelector, useAppDispatch } from '../../store/hooks';
+import { selectPlayer, selectTimeComputer, selectTimePlayer, selectDepth, selectGameState, setTime, GameState } from '../game/game.slice';
 import ColorCard from '../color-card/color-card.component';
 import Button from '../button/button.component';
 import { selectTurn } from '../board/board.slice';
@@ -22,18 +22,22 @@ function minutesToMilliseconds(minutes: number): number {
 }
 
 export default function Timer() {
+   const dispatch = useAppDispatch();
+
    const player: Color = useAppSelector(selectPlayer);
    const turn: Color = useAppSelector(selectTurn);
-   const startTime: number = useAppSelector(selectTime);
+   const startTimePlayer: number = useAppSelector(selectTimePlayer);
+   const startTimeComputer: number = useAppSelector(selectTimeComputer);
    const depth: number = useAppSelector(selectDepth);
+   const gameState: GameState = useAppSelector(selectGameState);
    const colorPlayer: CardColor = player === 'w' ? 'white' : 'black';
    const colorComputer: CardColor = player === 'w' ? 'black' : 'white';
 
    const countdownId = useRef<null | number>(null);
-   const currTimePlayer = useRef<number>(minutesToMilliseconds(startTime));
-   const currTimeComputer = useRef<number>(minutesToMilliseconds(startTime));
-   const [formattedTimePlayer, setFormattedTimePlayer] = useState<string>(formatTime(startTime));
-   const [formattedTimeComputer, setFormattedTimeComputer] = useState<string>(formatTime(startTime));
+   const currTimePlayer = useRef<number>(minutesToMilliseconds(startTimePlayer));
+   const currTimeComputer = useRef<number>(minutesToMilliseconds(startTimeComputer));
+   const [formattedTimePlayer, setFormattedTimePlayer] = useState<string>(formatTime(startTimePlayer));
+   const [formattedTimeComputer, setFormattedTimeComputer] = useState<string>(formatTime(startTimeComputer));
    const { setIsTimerOver, setResigned } = useContext<TimerContextType>(TimerContext);
 
    const startTimer = (currTime: MutableRefObject<number>, setFormattedTime: Dispatch<SetStateAction<string>>): number => {
@@ -54,13 +58,17 @@ export default function Timer() {
       return requestAnimationFrame(countdown);
    }
 
+   useEffect(() => () => {
+      dispatch(setTime({ timePlayer: currTimePlayer.current, timeComputer: currTimeComputer.current }));
+   }, []);
+
    useEffect(() => {
-      currTimePlayer.current = minutesToMilliseconds(startTime);
-      currTimeComputer.current = minutesToMilliseconds(startTime);
+      currTimePlayer.current = minutesToMilliseconds(startTimePlayer);
+      currTimeComputer.current = minutesToMilliseconds(startTimeComputer);
 
       setFormattedTimePlayer(formatTime(currTimePlayer.current));
       setFormattedTimeComputer(formatTime(currTimeComputer.current));
-   }, [startTime]);
+   }, [startTimePlayer, startTimeComputer]);
 
    useEffect(() => {
       countdownId.current = player === turn ? 
@@ -68,7 +76,11 @@ export default function Timer() {
          startTimer(currTimeComputer, setFormattedTimeComputer);
 
       return () => cancelAnimationFrame(countdownId.current!);
-   }, [turn, startTime]);
+   }, [turn, startTimePlayer, startTimeComputer]);
+
+   if (gameState !== 'IN_PROGRESS' && !!countdownId.current) {
+      cancelAnimationFrame(countdownId.current);
+   }
 
    return (
       <S.Container>
