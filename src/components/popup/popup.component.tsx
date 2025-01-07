@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useAppDispatch } from '../../store/hooks';
+import { useNavigate } from 'react-router-dom';
 import { setGameState } from '../game/game.slice';
 import { initialize } from '../board/board.slice';
 import Overlay from '../overlay/overlay.component';
@@ -13,12 +14,17 @@ type PopupProps = {
 
 export default function Popup({ message }: PopupProps) {
    const dispatch = useAppDispatch();
+   const navigate = useNavigate();
    const [isOpen, setIsOpen] = useState<boolean>(true);
 
    const restart = () => {
       dispatch(setGameState('YET_TO_BEGIN'));
       dispatch(initialize());
       setIsOpen(false);
+   }
+
+   const navigateToAnalysis = () => {
+      navigate('/analysis');
    }
 
    return (
@@ -28,7 +34,7 @@ export default function Popup({ message }: PopupProps) {
             <S.PopupMessage>{message}</S.PopupMessage>
             <S.Buttons>
                <Button clickHandler={restart}>Play again</Button>
-               <Button>Analyze</Button>
+               <Button clickHandler={navigateToAnalysis}>Analyze</Button>
             </S.Buttons>
          </S.Popup>
       </Overlay>
