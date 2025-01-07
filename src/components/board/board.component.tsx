@@ -1,9 +1,10 @@
 import { useState, useEffect, useMemo, useContext, DragEvent, MouseEvent } from 'react';
 import { useAppSelector, useAppDispatch } from '../../store/hooks';
 import { selectPlayer, setOutcomeMessage } from '../game/game.slice';
-import { RANKS, FILES, selectPosition, selectTurn, selectCastling, selectEnpassant, movePlayer, promote } from './board.slice';
+import { RANKS, FILES, selectPosition, selectTurn, selectCastling, selectEnpassant, selectHalfMove, selectFullMove, movePlayer, promote } from './board.slice';
 import { getCellColor, getIdxFromCoords } from './board.utils';
 import { generateBoardFromFen, getLegalMovesForPiece, moveHighlight, captureHighlight, checkHighLight, isPromotion, hasLegalMoves } from './board.utils';
+import { addPosition } from '../../routes/analysis-route/analysis-route.slice';
 import { pieces } from '../../pieces/pieces.images';
 import { getLegalMoves, getPieceColor, isChecked } from '../../pieces/pieces.moves';
 import { TimerContext } from '../timer/timer.context';
@@ -25,6 +26,8 @@ export default function Board() {
    const position: string = useAppSelector(selectPosition);
    const castling: string = useAppSelector(selectCastling);
    const enpassant: string = useAppSelector(selectEnpassant);
+   const halfMove: number = useAppSelector(selectHalfMove);
+   const fullMove: number = useAppSelector(selectFullMove);
 
    const ranks: string[] = player === 'w' ? [...RANKS].reverse() : RANKS;
    const files: string[] = player === 'w' ? FILES : [...FILES].reverse();
@@ -37,6 +40,11 @@ export default function Board() {
    const currMoveData: MoveData = { board, turn, player, castling, enpassant };
    const allLegalMoves: Map<number, Coords[]> = useMemo(() => getLegalMoves(currMoveData), [turn, player, position]);
    const currLegalMoves: Set<number> = getLegalMovesForPiece(origin, allLegalMoves);
+
+   useEffect(() => {
+      const fullFen: string = `${position} ${turn} ${castling} ${enpassant} ${halfMove} ${fullMove}`;
+      dispatch(addPosition(fullFen));
+   }, [position]);
 
    useEffect(() => {
       if (isTimeOver || resigned) {
