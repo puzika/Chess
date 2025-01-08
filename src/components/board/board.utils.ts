@@ -156,10 +156,22 @@ export function isPromotion(target: Coords, piece: string): boolean {
    return (row === 0 || row === ROWS - 1) && (piece.toLowerCase() === 'p');
 }
 
-export function hasLegalMoves(allLegalMoves: Map<number, Coords[]>) {
+export function hasLegalMoves(allLegalMoves: Map<number, Coords[]>): boolean {
    for (const [_, pieceLegalMoves] of allLegalMoves) {
       if (pieceLegalMoves.length > 0) return true;
    }
 
    return false;
+}
+
+export function getMoveNotation(move: Move, player: Color, promotion: string = ''): string {
+   const { origin, target } = move;
+   const { row: originRow, col: originCol } = origin;
+   const { row: targetRow, col: targetCol } = target;
+   const ranks: string[] = player === 'w' ? [...RANKS].reverse() : RANKS;
+   const files: string[] = player === 'w' ? FILES : [...FILES].reverse();
+
+   let notation: string = `${files[originCol]}${ranks[originRow]}${files[targetCol]}${ranks[targetRow]}` + promotion.toLowerCase();
+
+   return notation;
 }

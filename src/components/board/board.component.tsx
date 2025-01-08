@@ -3,7 +3,7 @@ import { useAppSelector, useAppDispatch } from '../../store/hooks';
 import { selectPlayer, setOutcomeMessage } from '../game/game.slice';
 import { RANKS, FILES, selectPosition, selectTurn, selectCastling, selectEnpassant, selectHalfMove, selectFullMove, movePlayer, promote } from './board.slice';
 import { getCellColor, getIdxFromCoords } from './board.utils';
-import { generateBoardFromFen, getLegalMovesForPiece, moveHighlight, captureHighlight, checkHighLight, isPromotion, hasLegalMoves } from './board.utils';
+import { generateBoardFromFen, getLegalMovesForPiece, moveHighlight, captureHighlight, checkHighLight, isPromotion, hasLegalMoves, getMoveNotation } from './board.utils';
 import { addPosition } from '../../routes/analysis-route/analysis-route.slice';
 import { pieces } from '../../pieces/pieces.images';
 import { getLegalMoves, getPieceColor, isChecked } from '../../pieces/pieces.moves';
@@ -13,6 +13,7 @@ import type { Color, Piece, Move } from './board.slice';
 import type { Coords } from './board.slice';
 import type { GameData } from '../game/game.utils';
 import type { TimerContextType } from '../timer/timer.context';
+import type { MovePosition } from '../../routes/analysis-route/analysis-route.slice';
 import Promotion from '../promotion/promotion.component';
 import * as S from './board.style';
 import * as svar from '../../variables.style';
@@ -33,9 +34,10 @@ export default function Board() {
    const files: string[] = player === 'w' ? FILES : [...FILES].reverse();
    const board: string[][] = useMemo(() => player === 'w' ? generateBoardFromFen(position) : generateBoardFromFen(position.split('').reverse().join('')), [position, turn, player]);
    const [checked, setChecked] = useState<boolean>(false);
-   const [promotionCell, setPromotionCell] = useState<Coords>({ row: -1, col: -1 });
+   const [promotionMove, setPromotionMove] = useState<Move | null>(null);
    const [origin, setOrigin] = useState<Coords>({ row: -1, col: -1 });
    const [draggedOver, setDraggedOver] = useState<Coords>({row: -1, col: -1});
+   const [prevMoveNotation, setPrevMoveNotation] = useState<string>('initial');
 
    const currMoveData: MoveData = { board, turn, player, castling, enpassant };
    const allLegalMoves: Map<number, Coords[]> = useMemo(() => getLegalMoves(currMoveData), [turn, player, position]);
@@ -43,7 +45,12 @@ export default function Board() {
 
    useEffect(() => {
       const fullFen: string = `${position} ${turn} ${castling} ${enpassant} ${halfMove} ${fullMove}`;
-      dispatch(addPosition(fullFen));
+      const movePosition: MovePosition = {
+         notation: prevMoveNotation,
+         position: fullFen,
+      }
+
+      dispatch(addPosition(movePosition));
    }, [position]);
 
    useEffect(() => {
@@ -110,13 +117,13 @@ export default function Board() {
       if (!currLegalMoves.has(getIdxFromCoords({ row, col }))) return;
 
       const target: Coords = { row, col };
-      const moveCoords: Move = { origin, target };
+      const moveCoords: Move = { origin: {...origin}, target };
       const piece: string = board[origin.row][origin.col];
+      const moveNotation: string = getMoveNotation(moveCoords, player);
 
       dispatch(movePlayer({board, moveCoords, player}));
       setOrigin({ row: -1, col: -1 });
-
-      isPromotion(target, piece) && setPromotionCell(target);
+      isPromotion(target, piece) ? setPromotionMove(moveCoords) : setPrevMoveNotation(moveNotation);
    }
 
    const handleClick = (e: MouseEvent<HTMLDivElement>): void => {
@@ -130,14 +137,14 @@ export default function Board() {
       if (isValidOriginCell) setOrigin({ row, col });
       else if (currLegalMoves.has(getIdxFromCoords({ row, col }))) {
          const target: Coords = { row, col };
-         const moveCoords: Move = { origin, target };
+         const moveCoords: Move = { origin: {...origin}, target };
          const piece: string = board[origin.row][origin.col];
+         const moveNotation: string = getMoveNotation(moveCoords, player);
 
          dispatch(movePlayer({board, moveCoords, player}));
          setOrigin({ row: -1, col: -1 });
          setDraggedOver({ row: -1, col: -1 });
-
-         isPromotion(target, piece) && setPromotionCell(target);
+         isPromotion(target, piece) ? setPromotionMove(moveCoords) : setPrevMoveNotation(moveNotation);
       }
    }
 
@@ -152,8 +159,14 @@ export default function Board() {
    }
 
    const handlePromotion = (promotion: string): void => {
-      dispatch(promote({ promotion, promotionCell, board, player}));
-      setPromotionCell({ row: -1, col: -1 });
+      if (!promotionMove) return console.error("can't promote if promotion move is null");
+
+      const { target } = promotionMove;
+      const moveNotation: string = getMoveNotation(promotionMove, player, promotion);
+
+      dispatch(promote({ promotion, promotionCell: target, board, player}));
+      setPromotionMove(null);
+      setPrevMoveNotation(moveNotation);
    }
 
    return (
@@ -198,7 +211,7 @@ export default function Board() {
             ))
          }
          { 
-            (promotionCell.row !== -1 && promotionCell.col !== -1) && <Promotion promotionHandler={handlePromotion} />
+            !!promotionMove && <Promotion promotionHandler={handlePromotion} />
          }
       </S.Board>
    )
