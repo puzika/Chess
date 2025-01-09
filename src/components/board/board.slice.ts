@@ -59,10 +59,10 @@ export const boardSlice = createSlice({
          state.halfmove = board[target.row][target.col] !== '' || board[origin.row][origin.col].toLowerCase() === 'p' ? 0 : state.halfmove + 1;
          state.fullmove = state.turn === 'b' ? state.fullmove + 1 : state.fullmove;
          state.turn = state.turn === 'w' ? 'b' : 'w';
-         state.castling = getUpdatedCastlingState(state.castling, origin, player);
          state.enpassant = getEnpassantCell(board[origin.row][origin.col], moveCoords, player);
-
+         
          moveBoardPieces(board, moveCoords);
+         state.castling = getUpdatedCastlingState(state.castling, board, player);
          state.position = generateFenPositionFromBoard(board, player);
       },
 

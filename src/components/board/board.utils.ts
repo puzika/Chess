@@ -87,27 +87,28 @@ export function getLegalMovesForPiece(pieceCoords: Coords, legalMoves: Map<numbe
    return cellIndices;
 }
 
-export function getUpdatedCastlingState(currCastlingState: string, origin: Coords, player: Color): string {
+export function getUpdatedCastlingState(currCastlingState: string, board: string[][], player: Color): string {
    if (currCastlingState === '-') return currCastlingState;
 
-   const originIdx: number = getIdxFromCoords(origin);
-   const initialKingRookCells: Map<number, string> = new Map([
-      [getIdxFromCoords({ row: 0, col: 0 }), player === 'w' ? 'q' : 'K'],
-      [getIdxFromCoords({ row: 0, col: COLS - 1 }), player === 'w' ? 'k' : 'Q'],
-      [getIdxFromCoords({ row: 0, col: 3 }), player === 'w' ? '' : 'KQ'],           //KING OR QUEEN POSITION
-      [getIdxFromCoords({ row: 0, col: 4 }), player === 'w' ? 'kq' : ''],           //KING OR QUEEN POSITION
-      [getIdxFromCoords({ row: ROWS - 1, col: 0 }), player === 'w' ? 'Q' : 'k'],
-      [getIdxFromCoords({ row: ROWS - 1, col: COLS - 1 }), player === 'w' ? 'K' : 'q'],
-      [getIdxFromCoords({ row: ROWS - 1, col: 3 }), player === 'w' ? '' : 'kq'],    //KING OR QUEEN POSITION
-      [getIdxFromCoords({ row: ROWS - 1, col: 4 }), player === 'w' ? 'KQ' : ''],    //KING OR QUEEN POSITION
-   ]);
+   let castlingToRemove: string = '';
+   const castlingData: [Coords, string, string][] = [
+      [{ row: 0, col: 0 }, player === 'w' ? 'q' : 'K', player === 'w' ? 'r' : 'R'],
+      [{ row: 0, col: COLS - 1 }, player === 'w' ? 'k' : 'Q', player === 'w' ? 'r' : 'R'],
+      [{ row: ROWS - 1, col: 0 }, player === 'w' ? 'Q' : 'k', player === 'w' ? 'R' : 'r'],
+      [{ row: ROWS - 1, col: COLS - 1 }, player === 'w' ? 'K' : 'q', player === 'w' ? 'R' : 'r'],
+      [{ row: 0, col: player === 'w' ? 4 : 3 }, player === 'w' ? 'kq' : 'KQ', player === 'w' ? 'k' : 'K'],
+      [{ row: ROWS - 1, col: player === 'w' ? 4 : 3 }, player === 'w' ? 'KQ' : 'kq', player === 'w' ? 'K' : 'k']
+   ];
 
-   const stateToBeRemoved: string = initialKingRookCells.get(originIdx) ?? '';
-   const newCastlingState: string = stateToBeRemoved === '' ? 
-      currCastlingState : 
-      [...stateToBeRemoved].reduce((newState, toBeRemoved) => newState = newState.replace(toBeRemoved, ''), currCastlingState);
+   for (const [cell, castling, piece] of castlingData) {
+      const { row, col } = cell;
 
-   return newCastlingState || '-';
+      if (board[row][col] !== piece) castlingToRemove += castling;
+   }
+
+   const updatedCastling: string = [...castlingToRemove].reduce((acc, curr) => acc.replace(curr, ''), currCastlingState);
+
+   return updatedCastling === '' ? '-' : updatedCastling;
 }
 
 export function moveBoardPieces(board: string[][], move: Move): void {
