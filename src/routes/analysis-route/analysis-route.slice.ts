@@ -12,8 +12,8 @@ export type Analysis = {
 };
 
 const initialState: Analysis = {
-   boardPositions: [],
-   currPositionIdx: -1,
+   boardPositions: [{ notation: 'initial', position: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'}],
+   currPositionIdx: 0,
 };
 
 export const analysisSlice = createSlice({
@@ -39,6 +39,7 @@ export const {
 } = analysisSlice.actions;
 
 export const selectBoardPositions = (state: RootState): MovePosition[] => state.analysis.boardPositions;
-export const selectCurrPosition = (state: RootState): number => state.analysis.currPositionIdx;
+export const selectCurrPositionIdx = (state: RootState): number => state.analysis.currPositionIdx;
+export const selectCurrPosition = (state: RootState): string => state.analysis.boardPositions[state.analysis.currPositionIdx].position;
 
 export default analysisSlice.reducer;
