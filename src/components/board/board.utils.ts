@@ -1,4 +1,5 @@
-import { Color, Coords, Move, FILES, RANKS } from "./board.slice";
+import { FILES, RANKS } from "./board.slice";
+import type { BoardState, Color, Coords, Move } from "./board.slice";
 import * as svar from '../../variables.style';
 
 const ROWS: number = 8;
@@ -175,4 +176,18 @@ export function getMoveNotation(move: Move, player: Color, promotion: string = '
    let notation: string = `${files[originCol]}${ranks[originRow]}${files[targetCol]}${ranks[targetRow]}` + promotion.toLowerCase();
 
    return notation;
+}
+
+export function getBoardStateFromFen(fen: string): BoardState {
+   const fenItems: string[] = fen.split(' ');
+   const updatedBoardState: BoardState = {
+      position: fenItems[0],
+      turn: fenItems[1] as Color,
+      castling: fenItems[2],
+      enpassant: fenItems[3],
+      halfmove: Number(fenItems[4]),
+      fullmove: Number(fenItems[5])
+   };
+
+   return updatedBoardState;
 }

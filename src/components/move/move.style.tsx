@@ -1,8 +1,12 @@
 import styled from "styled-components";
-import type { MoveProps } from "./move.component";
+import type { Color } from "../board/board.slice";
 import * as svar from '../../variables.style';
 
-export const Move = styled.div<MoveProps>`
+type MoveStyleProps = {
+   turn: Color,
+}
+
+export const Move = styled.div<MoveStyleProps>`
    display: flex;
    align-items: center;
    justify-content: center;

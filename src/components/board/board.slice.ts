@@ -1,13 +1,13 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import type { RootState } from "../../store/store";
-import { generateFenPositionFromBoard, getUpdatedCastlingState, getEnpassantCell, moveBoardPieces } from "./board.utils";
+import { generateFenPositionFromBoard, getUpdatedCastlingState, getEnpassantCell, getBoardStateFromFen, moveBoardPieces } from "./board.utils";
 
 export type Color = 'w' | 'b';
 export type Piece = 'r' | 'n' | 'b' | 'q' | 'k' | 'p' | 'R' | 'N' | 'B' | 'Q' | 'K' | 'P';
 export const FILES: string[] = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
 export const RANKS: string[] = ['1', '2', '3', '4', '5', '6', '7', '8'];
 
-type BoardState = {
+export type BoardState = {
    position: string,
    turn: Color,
    castling: string,
@@ -76,11 +76,20 @@ export const boardSlice = createSlice({
 
       initialize: () => {
          return initialState;
+      },
+
+      updateBoardState: (_, action: PayloadAction<string>) => {
+         return getBoardStateFromFen(action.payload);
       }
    }
 });
 
-export const { movePlayer, promote, initialize } = boardSlice.actions;
+export const { 
+   movePlayer, 
+   promote, 
+   initialize,
+   updateBoardState
+} = boardSlice.actions;
 
 export const selectPosition = (state: RootState): string => state.board.position;
 export const selectTurn = (state: RootState): Color => state.board.turn;

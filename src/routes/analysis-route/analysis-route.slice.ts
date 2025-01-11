@@ -24,18 +24,32 @@ export const analysisSlice = createSlice({
          const { notation, position } = action.payload;
          const boardPositions = state.boardPositions.slice(0, state.currPositionIdx + 1);
 
-         const currPosition: MovePosition | undefined = boardPositions[state.currPositionIdx];
+         const currPosition: MovePosition = boardPositions[state.currPositionIdx];
 
-         if (!!currPosition && (notation === currPosition.notation || position === currPosition.position)) return state;
+         if ((notation === currPosition.notation) || (position === currPosition.position)) return state;
 
          state.boardPositions = [...boardPositions, action.payload];
          state.currPositionIdx = state.currPositionIdx + 1;
       },
+
+      jumpBack: (state) => {
+         const prevIdx: number = state.currPositionIdx - 1;
+
+         state.currPositionIdx = prevIdx < 0 ? state.currPositionIdx : prevIdx;
+      },
+
+      jumpForward: (state) => {
+         const nextIdx: number = state.currPositionIdx + 1;
+
+         state.currPositionIdx = nextIdx < state.boardPositions.length ? nextIdx : state.currPositionIdx;
+      }
    },
 });
 
 export const {
-   addPosition
+   addPosition,
+   jumpBack,
+   jumpForward
 } = analysisSlice.actions;
 
 export const selectBoardPositions = (state: RootState): MovePosition[] => state.analysis.boardPositions;
