@@ -42,6 +42,14 @@ export const analysisSlice = createSlice({
          const nextIdx: number = state.currPositionIdx + 1;
 
          state.currPositionIdx = nextIdx < state.boardPositions.length ? nextIdx : state.currPositionIdx;
+      },
+
+      jumpToIdx: (state, action: PayloadAction<number>) => {
+         const idx: number = action.payload;
+
+         if (idx < 0 || idx >= state.boardPositions.length) return state;
+
+         state.currPositionIdx = idx;
       }
    },
 });
@@ -49,7 +57,8 @@ export const analysisSlice = createSlice({
 export const {
    addPosition,
    jumpBack,
-   jumpForward
+   jumpForward,
+   jumpToIdx
 } = analysisSlice.actions;
 
 export const selectBoardPositions = (state: RootState): MovePosition[] => state.analysis.boardPositions;

@@ -18,7 +18,7 @@ export default function MovesBar() {
          <S.MovesBar>
             {
                boardPositions.map(({ notation, position }, idx) => (
-                  <Move key={crypto.randomUUID()} move={notation} current={idx === currIdx} turn={getMoveTurnFromPosition(position)} />
+                  <Move key={crypto.randomUUID()} move={notation} idx={idx} current={idx === currIdx} turn={getMoveTurnFromPosition(position)} />
                ))
             }
          </S.MovesBar>
