@@ -64,7 +64,7 @@ const getMovesPawn = (origin: Coords, board: string[][], player: Color): Coords[
 
       if (
          (moveCol === col && verticalMoveDist === 1 && board[moveRow][moveCol] === '') ||
-         (moveCol === col && verticalMoveDist === 2 && board[moveRow][moveCol] === '' && board[doubleMoveMidRow][moveCol] === '') ||
+         ((row === 1 || row === 6) && moveCol === col && verticalMoveDist === 2 && board[moveRow][moveCol] === '' && board[doubleMoveMidRow][moveCol] === '') ||
          (moveCol !== col && board[moveRow][moveCol] !== '' && canTake(board[row][col], board[moveRow][moveCol])) 
       ) pawnMoves.push({ row: moveRow, col: moveCol });
    }
