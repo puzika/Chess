@@ -15,29 +15,22 @@ const initialState: Stockfish = {
    bestMove: '-',
 }
 
-type FetchData = {
-   fen: string,
-   depth: number,
-   maxThinkingTime: number,
+export type Response = {
+   success: boolean,
+   error?: string,
+   bestmove?: string,
+   continuation?: string,
+   evaluation?: number | null,
+   mate?: number | null,
 }
 
 export const fetchBestMove = createAsyncThunk(
    'fetch/bestMove',
    async (fen: string, { rejectWithValue }) => {
       try {
-         const data: FetchData = {
-            fen,
-            depth: 18,
-            maxThinkingTime: 100,
-         }
+         const depth: number = 15;
 
-         const response = await fetch("https://chess-api.com/v1", {
-            method: "POST",
-            headers: {
-               "Content-Type": "application/json"
-            },
-            body: JSON.stringify(data),
-         });
+         const response = await fetch(`https://stockfish.online/api/s/v2.php?fen=${fen}&depth=${depth}`);
 
          if (response.status === 400) return rejectWithValue('Invalid request');
          if (response.status === 404) return rejectWithValue('The requested resource not found');
@@ -65,8 +58,11 @@ export const stockfishSlice = createSlice({
             state.error = action.payload as string | null;
          })
          .addCase(fetchBestMove.fulfilled, (state, action) => {
+            const response: Response = action.payload;
+            const bestMove: string = (response.continuation ?? '').split(' ')[0];
+
             state.loading = 'succeeded';
-            state.bestMove = action.payload?.move;
+            state.bestMove = bestMove ?? '';
          });
    }
 });

@@ -191,26 +191,3 @@ export function getBoardStateFromFen(fen: string): BoardState {
 
    return updatedBoardState;
 }
-
-export function hasEnpassant(allLegalMoves: Map<number, Coords[]>, board: string[][]): boolean {
-   const pawnIndices: Coords[] = [];
-
-   for (let i: number = 0; i < ROWS; i++) {
-      for (let j: number = 0; j < COLS; j++) {
-         const piece: string = board[i][j];
-
-         if (piece.toLowerCase() === 'p') pawnIndices.push({ row: i, col: j });
-      }
-   }
-
-   for (const { row, col } of pawnIndices) {
-      const idx: number = getIdxFromCoords({ row, col });
-      const moves: Coords[] = allLegalMoves.get(idx) ?? [];
-
-      for (const { row: targetRow, col: targetCol } of moves) {
-         if (targetCol !== col && board[targetRow][targetCol] !== '') return true;
-      }
-   }
-
-   return false
-}
