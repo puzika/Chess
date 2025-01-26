@@ -14,6 +14,7 @@ export type Game = {
    timePlayer: number,
    timeComputer: number,
    depth: number,
+   outcome: GameOutcome,
    outcomeMessage: string,
    gameState: GameState, 
 };
@@ -24,6 +25,7 @@ const initialState: Game = {
    timePlayer: Infinity,
    timeComputer: Infinity,
    depth: 10,
+   outcome: '-',
    outcomeMessage: '',
    gameState: 'YET_TO_BEGIN',
 }
@@ -49,8 +51,9 @@ export const gameSlice = createSlice({
          };
 
          const outcome: GameOutcome = getGameOutcome(action.payload);
+         state.outcome = outcome;
          state.outcomeMessage = outcomeMessages[outcome];
-         state.gameState = outcome === '-' ? state.gameState : 'FINISHED';
+         state.gameState = outcome === '-' ? 'IN_PROGRESS' : 'FINISHED';
       },
 
       setTime: (state, action: PayloadAction<{ timePlayer: number, timeComputer: number}>) => {
@@ -64,6 +67,10 @@ export const gameSlice = createSlice({
 
       setGameState: (state, action: PayloadAction<GameState>) => {
          state.gameState = action.payload;
+      },
+
+      setGameType: (state, action: PayloadAction<GameType>) => {
+         state.type = action.payload;
       }
    },
 });
@@ -73,6 +80,7 @@ export const {
    setOutcomeMessage,
    setTime,
    setGameState,
+   setGameType,
 } = gameSlice.actions;
 
 export const selectType = (state: RootState): GameType => state.game.type;
@@ -82,5 +90,6 @@ export const selectTimeComputer = (state: RootState): number => state.game.timeC
 export const selectDepth = (state: RootState): number => state.game.depth;
 export const selectOutcomeMessage = (state: RootState): string => state.game.outcomeMessage;
 export const selectGameState = (state: RootState): GameState => state.game.gameState;
+export const selectOutcome = (state: RootState): GameOutcome => state.game.outcome;
 
 export default gameSlice.reducer;

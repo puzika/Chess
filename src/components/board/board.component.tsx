@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useContext, DragEvent, MouseEvent } from 'react';
 import { useAppSelector, useAppDispatch } from '../../store/hooks';
-import { selectPlayer, setOutcomeMessage } from '../game/game.slice';
+import { selectPlayer, setOutcomeMessage, selectGameState } from '../game/game.slice';
 import { RANKS, FILES, selectPosition, selectTurn, selectCastling, selectEnpassant, selectHalfMove, selectFullMove, movePlayer, promote } from './board.slice';
 import { getCellColor, getIdxFromCoords } from './board.utils';
 import { generateBoardFromFen, getLegalMovesForPiece, moveHighlight, captureHighlight, checkHighLight, isPromotion, hasLegalMoves, getMoveNotation } from './board.utils';
@@ -14,6 +14,7 @@ import type { Coords } from './board.slice';
 import type { GameData } from '../game/game.utils';
 import type { TimerContextType } from '../timer/timer.context';
 import type { MovePosition } from '../../routes/analysis-route/analysis-route.slice';
+import type { GameState } from '../game/game.slice';
 import Promotion from '../promotion/promotion.component';
 import * as S from './board.style';
 import * as svar from '../../variables.style';
@@ -29,6 +30,7 @@ export default function Board() {
    const enpassant: string = useAppSelector(selectEnpassant);
    const halfMove: number = useAppSelector(selectHalfMove);
    const fullMove: number = useAppSelector(selectFullMove);
+   const gameState: GameState = useAppSelector(selectGameState);
 
    const ranks: string[] = player === 'w' ? [...RANKS].reverse() : RANKS;
    const files: string[] = player === 'w' ? FILES : [...FILES].reverse();
@@ -54,7 +56,7 @@ export default function Board() {
    }, [position]);
 
    useEffect(() => {
-      if (isTimeOver || resigned) {
+      if ((isTimeOver || resigned) && gameState === 'IN_PROGRESS') {
          const gameData: GameData = {
             isTimeOver,
             isChecked: checked,
@@ -69,18 +71,20 @@ export default function Board() {
    }, [isTimeOver, resigned]);
 
    useEffect(() => {
-      const check = isChecked(currMoveData);
-      const gameData: GameData = {
-         isTimeOver,
-         isChecked: check,
-         board,
-         hasLegalMoves: hasLegalMoves(allLegalMoves),
-         turn,
-         resigned,
-      };
+      if (gameState === 'IN_PROGRESS') {
+         const check = isChecked(currMoveData);
+         const gameData: GameData = {
+            isTimeOver,
+            isChecked: check,
+            board,
+            hasLegalMoves: hasLegalMoves(allLegalMoves),
+            turn,
+            resigned,
+         };
 
-      setChecked(check);
-      dispatch(setOutcomeMessage(gameData));
+         setChecked(check);
+         dispatch(setOutcomeMessage(gameData));
+      }
    }, [position, turn, player]);
 
    const handleDragStart = (e: DragEvent<HTMLImageElement>): void => {

@@ -34,6 +34,7 @@ export default function Form() {
       const game: Game = {
          gameState: 'IN_PROGRESS',
          type: 'computer',
+         outcome: '-',
          outcomeMessage: '',
          timePlayer: time,
          timeComputer: time,
