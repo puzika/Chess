@@ -47,7 +47,11 @@ export const fetchBestMove = createAsyncThunk(
 export const stockfishSlice = createSlice({
    name: 'stockfish',
    initialState,
-   reducers: {},
+   reducers: {
+      removeBestMove: (state) => {
+         state.bestMove = '';
+      }
+   },
    extraReducers: (builder) => {
       builder
          .addCase(fetchBestMove.pending, (state) => {
@@ -66,6 +70,8 @@ export const stockfishSlice = createSlice({
          });
    }
 });
+
+export const { removeBestMove } = stockfishSlice.actions;
 
 export const selectLoading = (state: RootState): Loading => state.stockfish.loading;
 export const selectError = (state: RootState): string | null => state.stockfish.error;
