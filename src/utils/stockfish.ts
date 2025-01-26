@@ -1,10 +1,10 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { RootState } from "../store/store";
 
-export type Loading = 'idle' | 'pending' | 'succeeded' | 'failed';
+export type RequestState = 'idle' | 'pending' | 'succeeded' | 'failed';
 
 type Stockfish = {
-   loading: Loading,
+   loading: RequestState,
    error: string | null,
    bestMove: string,
 }
@@ -73,7 +73,7 @@ export const stockfishSlice = createSlice({
 
 export const { removeBestMove } = stockfishSlice.actions;
 
-export const selectLoading = (state: RootState): Loading => state.stockfish.loading;
+export const selectLoading = (state: RootState): RequestState => state.stockfish.loading;
 export const selectError = (state: RootState): string | null => state.stockfish.error;
 export const selectBestMove = (state: RootState): string => state.stockfish.bestMove;
 

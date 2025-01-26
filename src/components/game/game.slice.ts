@@ -22,8 +22,8 @@ export type Game = {
 const initialState: Game = {
    type: "analysis",
    player: 'w',
-   timePlayer: Infinity,
-   timeComputer: Infinity,
+   timePlayer: 10,
+   timeComputer: 10,
    depth: 10,
    outcome: '-',
    outcomeMessage: '',
