@@ -1,20 +1,21 @@
 import { useState, useEffect, useMemo, useContext, DragEvent, MouseEvent } from 'react';
 import { useAppSelector, useAppDispatch } from '../../store/hooks';
-import { selectPlayer, setOutcomeMessage, selectGameState } from '../game/game.slice';
+import { selectPlayer, setOutcomeMessage, selectGameState, selectType } from '../game/game.slice';
 import { RANKS, FILES, selectPosition, selectTurn, selectCastling, selectEnpassant, selectHalfMove, selectFullMove, movePlayer, promote } from './board.slice';
 import { getCellColor, getIdxFromCoords } from './board.utils';
-import { generateBoardFromFen, getLegalMovesForPiece, moveHighlight, captureHighlight, checkHighLight, isPromotion, hasLegalMoves, getMoveNotation } from './board.utils';
+import { generateBoardFromFen, getLegalMovesForPiece, moveHighlight, captureHighlight, checkHighLight, bestMoveHighlight, isPromotion, hasLegalMoves, getMoveNotation, getBestMoveCoords, isbestMoveCell, isCheckedPiece } from './board.utils';
 import { addPosition } from '../../routes/analysis-route/analysis-route.slice';
 import { pieces } from '../../pieces/pieces.images';
 import { getLegalMoves, getPieceColor, isChecked } from '../../pieces/pieces.moves';
 import { TimerContext } from '../timer/timer.context';
+import { selectBestMove } from '../../utils/stockfish';
 import type { MoveData } from '../../pieces/pieces.moves';
 import type { Color, Piece, Move } from './board.slice';
 import type { Coords } from './board.slice';
 import type { GameData } from '../game/game.utils';
 import type { TimerContextType } from '../timer/timer.context';
 import type { MovePosition } from '../../routes/analysis-route/analysis-route.slice';
-import type { GameState } from '../game/game.slice';
+import type { GameState, GameType } from '../game/game.slice';
 import Promotion from '../promotion/promotion.component';
 import * as S from './board.style';
 import * as svar from '../../variables.style';
@@ -30,7 +31,9 @@ export default function Board() {
    const enpassant: string = useAppSelector(selectEnpassant);
    const halfMove: number = useAppSelector(selectHalfMove);
    const fullMove: number = useAppSelector(selectFullMove);
+   const gameType: GameType = useAppSelector(selectType);
    const gameState: GameState = useAppSelector(selectGameState);
+   const bestMoveStr: string = useAppSelector(selectBestMove);
 
    const ranks: string[] = player === 'w' ? [...RANKS].reverse() : RANKS;
    const files: string[] = player === 'w' ? FILES : [...FILES].reverse();
@@ -40,6 +43,7 @@ export default function Board() {
    const [origin, setOrigin] = useState<Coords>({ row: -1, col: -1 });
    const [draggedOver, setDraggedOver] = useState<Coords>({row: -1, col: -1});
    const [prevMoveNotation, setPrevMoveNotation] = useState<string>('initial');
+   const bestMove: Move = getBestMoveCoords(bestMoveStr, player);
 
    const currMoveData: MoveData = { board, turn, player, castling, enpassant };
    const allLegalMoves: Map<number, Coords[]> = useMemo(() => getLegalMoves(currMoveData), [turn, player, position]);
@@ -191,11 +195,16 @@ export default function Board() {
                      onMouseOver={handleMouseOver}
 
                      style={{
-                        boxShadow: currLegalMoves.has(getIdxFromCoords({ row: idxRank, col: idxFile})) ?
-                           !!board[idxRank][idxFile] ? captureHighlight : moveHighlight :
-                           checked && board[idxRank][idxFile].toLowerCase() === 'k' && getPieceColor(board[idxRank][idxFile] as Piece) === turn ? checkHighLight : 'none',
-                        backgroundImage: currLegalMoves.has(getIdxFromCoords({ row: idxRank, col: idxFile})) && 
-                           idxRank === draggedOver.row && idxFile === draggedOver.col ?
+                        boxShadow: 
+                           isbestMoveCell(bestMove, { row: idxRank, col: idxFile }) && gameType === 'analysis' ? bestMoveHighlight : 
+                           isCheckedPiece(checked, board[idxRank][idxFile], turn) ? checkHighLight :
+                           currLegalMoves.has(getIdxFromCoords({ row: idxRank, col: idxFile })) && !!board[idxRank][idxFile] ? captureHighlight :
+                           currLegalMoves.has(getIdxFromCoords({ row: idxRank, col: idxFile })) ? moveHighlight :
+                           'none',
+                        backgroundImage: 
+                           currLegalMoves.has(getIdxFromCoords({ row: idxRank, col: idxFile})) && 
+                           idxRank === draggedOver.row && 
+                           idxFile === draggedOver.col ?
                            `linear-gradient(90deg, ${svar.clrHighlightTransparent} 0% 50%, ${svar.clrHighlightTransparent} 50% 100%)` :
                            'none',
                      }}

@@ -8,6 +8,7 @@ const COLS: number = 8;
 export const moveHighlight = `inset 0 0 1.5rem .5rem ${svar.clrHighlight}`;
 export const captureHighlight = `inset 0 0 1.5rem .5rem ${svar.clrNeutralMax}`;
 export const checkHighLight = `inset 0 0 1.5rem .5rem ${svar.clrHighlightCheck}`;
+export const bestMoveHighlight = `inset 0 0 1.5rem .5rem ${svar.clrHighlightBest}`;
 
 export function getCellColor(row: number, col: number): Color {
    return (row % 2 === 0 && col % 2 === 0) || (row % 2 !== 0 && col % 2 !== 0) ? 'w' : 'b';
@@ -190,4 +191,46 @@ export function getBoardStateFromFen(fen: string): BoardState {
    };
 
    return updatedBoardState;
+}
+
+export function getBestMoveCoords(bestMoveStr: string, player: Color): Move {
+   const ranks: string[] = player === 'w' ? [...RANKS].reverse() : RANKS;
+   const files: string[] = player === 'w' ? FILES : [...FILES].reverse();
+
+   const originStr: string = bestMoveStr.slice(0, 2);
+   const targetStr: string = bestMoveStr.slice(2, 4);
+
+   const origin: Coords = {
+      row: ranks.findIndex(curr => curr === originStr[1]),
+      col: files.findIndex(curr => curr === originStr[0]),
+   }
+
+   const target: Coords = {
+      row: ranks.findIndex(curr => curr === targetStr[1]),
+      col: files.findIndex(curr => curr === targetStr[0]),
+   }
+
+   return { origin, target };
+}
+
+export function areSameCoords(c1: Coords, c2: Coords): boolean {
+   return (
+      c1.row === c2.row &&
+      c1.col === c2.col
+   )
+}
+
+export function isbestMoveCell(bestMove: Move, currCell: Coords) {
+   return (
+      areSameCoords(bestMove.origin, currCell) ||
+      areSameCoords(bestMove.target, currCell)
+   )
+}
+
+export function isCheckedPiece(isChecked: boolean, piece: string, turn: Color): boolean {
+   if (!isChecked || piece === '') return false;
+
+   const pieceColor: Color = piece.toLowerCase() === piece ? 'b' : 'w';
+
+   return piece.toLowerCase() === 'k' && pieceColor === turn;
 }

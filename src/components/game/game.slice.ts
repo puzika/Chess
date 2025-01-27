@@ -5,7 +5,7 @@ import type { Color } from "../board/board.slice";
 import type { GameOutcome, GameData } from "./game.utils";
 import { getGameOutcome } from "./game.utils";
 
-type GameType = 'computer' | 'analysis';
+export type GameType = 'computer' | 'analysis';
 export type GameState = 'YET_TO_BEGIN' | 'IN_PROGRESS' | 'FINISHED';
 
 export type Game = {
