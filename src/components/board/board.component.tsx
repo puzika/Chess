@@ -35,8 +35,6 @@ export default function Board() {
    const gameState: GameState = useAppSelector(selectGameState);
    const bestMoveStr: string = useAppSelector(selectBestMove);
 
-   console.log(gameState);
-
    const ranks: string[] = player === 'w' ? [...RANKS].reverse() : RANKS;
    const files: string[] = player === 'w' ? FILES : [...FILES].reverse();
    const board: string[][] = useMemo(() => player === 'w' ? generateBoardFromFen(position) : generateBoardFromFen(position.split('').reverse().join('')), [position, turn, player]);
@@ -78,6 +76,26 @@ export default function Board() {
       }
    }, [position, isTimeOver, resigned]);
 
+   const hoverOverCell = (cell: HTMLDivElement): void => {
+      const row: number = Number(cell.dataset.row);
+      const col: number = Number(cell.dataset.col);
+
+      if (currLegalMoves.has(getIdxFromCoords({ row, col }))) setDraggedOver({ row, col });
+      else if (draggedOver.row !== -1 && draggedOver.col !== -1) setDraggedOver({ row: -1, col: -1 });
+   }
+
+   const makeMove = (targetRow: number, targetCol: number): void => {
+      const target: Coords = { row: targetRow, col: targetCol };
+      const moveCoords: Move = { origin: {...origin}, target };
+      const piece: string = board[origin.row][origin.col];
+      const moveNotation: string = getMoveNotation(moveCoords, player);
+
+      dispatch(movePlayer({board, moveCoords, player}));
+      setOrigin({ row: -1, col: -1 });
+      setDraggedOver({ row: -1, col: -1 });
+      isPromotion(target, piece) ? setPromotionMove(moveCoords) : setPrevMoveNotation(moveNotation);
+   }
+
    const handleDragStart = (e: DragEvent<HTMLImageElement>): void => {
       const parentCell = e.currentTarget.parentElement as HTMLDivElement;
 
@@ -93,12 +111,7 @@ export default function Board() {
 
    const handleDragEnter = (e: DragEvent<HTMLDivElement>): void => {
       const cell = e.currentTarget as HTMLDivElement;
-
-      const row: number = Number(cell.dataset.row);
-      const col: number = Number(cell.dataset.col);
-
-      if (currLegalMoves.has(getIdxFromCoords({ row, col }))) setDraggedOver({ row, col });
-      else if (draggedOver.row !== -1 && draggedOver.col !== -1) setDraggedOver({ row: -1, col: -1 });
+      hoverOverCell(cell);
    }
 
    const handleDragDrop = (e: DragEvent<HTMLDivElement>): void => {
@@ -107,18 +120,9 @@ export default function Board() {
       const row: number = Number(targetCell.dataset.row);
       const col: number = Number(targetCell.dataset.col);
 
-      setDraggedOver({ row: -1, col: -1 });
-
       if (!currLegalMoves.has(getIdxFromCoords({ row, col }))) return;
 
-      const target: Coords = { row, col };
-      const moveCoords: Move = { origin: {...origin}, target };
-      const piece: string = board[origin.row][origin.col];
-      const moveNotation: string = getMoveNotation(moveCoords, player);
-
-      dispatch(movePlayer({board, moveCoords, player}));
-      setOrigin({ row: -1, col: -1 });
-      isPromotion(target, piece) ? setPromotionMove(moveCoords) : setPrevMoveNotation(moveNotation);
+      makeMove(row, col);
    }
 
    const handleClick = (e: MouseEvent<HTMLDivElement>): void => {
@@ -130,27 +134,12 @@ export default function Board() {
       const isValidOriginCell: boolean = allLegalMoves.has(getIdxFromCoords({ row, col }));
 
       if (isValidOriginCell) setOrigin({ row, col });
-      else if (currLegalMoves.has(getIdxFromCoords({ row, col }))) {
-         const target: Coords = { row, col };
-         const moveCoords: Move = { origin: {...origin}, target };
-         const piece: string = board[origin.row][origin.col];
-         const moveNotation: string = getMoveNotation(moveCoords, player);
-
-         dispatch(movePlayer({board, moveCoords, player}));
-         setOrigin({ row: -1, col: -1 });
-         setDraggedOver({ row: -1, col: -1 });
-         isPromotion(target, piece) ? setPromotionMove(moveCoords) : setPrevMoveNotation(moveNotation);
-      }
+      else if (currLegalMoves.has(getIdxFromCoords({ row, col }))) makeMove(row, col);
    }
 
    const handleMouseOver = (e: MouseEvent<HTMLDivElement>): void => {
       const cell = e.currentTarget as HTMLDivElement;
-
-      const row: number = Number(cell.dataset.row);
-      const col: number = Number(cell.dataset.col);
-
-      if (currLegalMoves.has(getIdxFromCoords({ row, col }))) setDraggedOver({ row, col });
-      else if (draggedOver.row !== -1 && draggedOver.col !== -1) setDraggedOver({ row: -1, col: -1 });
+      hoverOverCell(cell);
    }
 
    const handlePromotion = (promotion: string): void => {
