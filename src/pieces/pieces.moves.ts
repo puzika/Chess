@@ -1,4 +1,4 @@
-import { Color, Piece, Coords, Move, FILES, RANKS } from "../components/board/board.slice"
+import { Color, Coords, Move, FILES, RANKS } from "../components/board/board.slice"
 import { getIdxFromCoords, getCoordsFromIdx } from "../components/board/board.utils";
 
 type Moves = Record<'K' | 'Q' | 'R' | 'B' | 'N' | 'P', (origin: Coords, board: string[][], player: Color) => Coords[]>;
@@ -18,12 +18,12 @@ const constructCoords = (row: number, col: number): Coords => {
    }
 }
 
-export const getPieceColor = (piece: Piece): Color => {
+export const getPieceColor = (piece: string): Color => {
    return piece.toLowerCase() === piece ? 'b' : 'w';
 }
 
 const canTake = (piece1: string, piece2: string): boolean => {
-   return getPieceColor(piece1 as Piece) !== getPieceColor(piece2 as Piece);
+   return getPieceColor(piece1) !== getPieceColor(piece2);
 }
 
 const isOnBoard = (target: Coords): boolean => {
@@ -47,7 +47,7 @@ const isValidMove = (move: Move, board: string[][]): boolean => {
 const getMovesPawn = (origin: Coords, board: string[][], player: Color): Coords[] => {
    const pawnMoves: Coords[] = [];
    const { row, col }: Coords = origin;
-   const pawnColor: Color = getPieceColor(board[row][col] as Piece);
+   const pawnColor: Color = getPieceColor(board[row][col]);
    const direction: number = (player === 'w' && pawnColor === 'w') || (player === 'b' && pawnColor === 'b') ? -1 : 1;
    const possiblePawnMoves: Coords[] = [
       { row: row + direction, col },
@@ -62,10 +62,28 @@ const getMovesPawn = (origin: Coords, board: string[][], player: Color): Coords[
 
       if (!isOnBoard({ row: moveRow, col: moveCol })) continue;
 
+      const canMakeOneMoveForward: boolean = (
+         (moveCol === col) && 
+         (verticalMoveDist === 1) && 
+         (board[moveRow][moveCol] === '')
+      );
+      const canMakeDoubleMove: boolean = (
+         (moveCol === col) && 
+         (row === 1 || row === 6) &&
+         (verticalMoveDist === 2) &&
+         (board[moveRow][moveCol] === '') &&
+         (board[doubleMoveMidRow][moveCol] === '')
+      );
+      const canCapture: boolean = (
+         (moveCol !== col) && 
+         (board[moveRow][moveCol] !== '') && 
+         canTake(board[row][col], board[moveRow][moveCol])
+      );
+
       if (
-         (moveCol === col && verticalMoveDist === 1 && board[moveRow][moveCol] === '') ||
-         ((row === 1 || row === 6) && moveCol === col && verticalMoveDist === 2 && board[moveRow][moveCol] === '' && board[doubleMoveMidRow][moveCol] === '') ||
-         (moveCol !== col && board[moveRow][moveCol] !== '' && canTake(board[row][col], board[moveRow][moveCol])) 
+         canMakeOneMoveForward ||
+         canMakeDoubleMove ||
+         canCapture
       ) pawnMoves.push({ row: moveRow, col: moveCol });
    }
 
@@ -73,34 +91,26 @@ const getMovesPawn = (origin: Coords, board: string[][], player: Color): Coords[
 }
 
 const getMovesRook = (origin: Coords, board: string[][]): Coords[] => {
+   const [rows, cols] = [board.length, board[0].length];
    const rookMoves: Coords[] = [];
    const { row, col } = origin;
-   let canMoveHorLeft: boolean = true;
-   let canMoveHorRight: boolean = true;
-   let canMoveVertUp: boolean = true;
-   let canMoveVertDown: boolean = true;
+   const dirs: [number, number][] = [[0, -1], [0, 1], [-1, 0], [1, 0]];
+   const canMove: boolean[] = [true, true, true, true];
    let idx: number = 1;
 
-   while (canMoveHorLeft || canMoveHorRight || canMoveVertUp || canMoveVertDown) {
-      if (canMoveHorLeft && isValidMove({ origin, target: {row, col: col - idx} }, board)) {
-         rookMoves.push(constructCoords(row, col - idx));
-         canMoveHorLeft = board[row][col - idx] === '';
-      } else canMoveHorLeft = false;
+   while (row + idx < rows || row - idx >= 0 || col + idx < cols || col - idx >= 0) {
+      for (let i: number = 0; i < dirs.length; i++) {
+         const [dirRow, dirCol] = dirs[i];
+         const targetRow: number = row + dirRow * idx;
+         const targetCol: number = col + dirCol * idx;
 
-      if (canMoveHorRight && isValidMove({ origin, target: {row, col: col + idx} }, board)) {
-         rookMoves.push(constructCoords(row, col + idx));
-         canMoveHorRight = board[row][col + idx] === '';
-      } else canMoveHorRight = false;
-
-      if (canMoveVertUp && isValidMove({ origin, target: {row: row - idx, col} }, board)) {
-         rookMoves.push(constructCoords(row - idx, col));
-         canMoveVertUp = board[row - idx][col] === '';
-      } else canMoveVertUp = false;
-
-      if (canMoveVertDown && isValidMove({ origin, target: {row: row + idx, col} }, board)) {
-         rookMoves.push(constructCoords(row + idx, col));
-         canMoveVertDown = board[row + idx][col] === '';
-      } else canMoveVertDown = false;
+         if (canMove[i] && isValidMove({ origin, target: {row: targetRow, col: targetCol} }, board)) {
+            rookMoves.push(constructCoords(targetRow, targetCol));
+            canMove[i] = board[targetRow][targetCol] === '';
+         } else {
+            canMove[i] = false;
+         }
+      }
 
       idx++;
    }
@@ -109,34 +119,26 @@ const getMovesRook = (origin: Coords, board: string[][]): Coords[] => {
 }
 
 const getMovesBishop = (origin: Coords, board: string[][]): Coords[] => {
+   const [rows, cols] = [board.length, board[0].length];
    const bishopMoves: Coords[] = [];
    const { row, col } = origin;
-   let canMoveLeftUp: boolean = true;
-   let canMoveLeftDown: boolean = true;
-   let canMoveRightUp: boolean = true;
-   let canMoveRightDown: boolean = true;
+   const dirs: [number, number][] = [[-1, -1], [1, 1], [-1, 1], [1, -1]];
+   const canMove: boolean[] = [true, true, true, true];
    let idx: number = 1;
 
-   while (canMoveLeftUp || canMoveLeftDown || canMoveRightUp || canMoveRightDown) {
-      if (canMoveLeftUp && isValidMove({ origin, target: { row: row - idx, col: col - idx}}, board)) {
-         bishopMoves.push(constructCoords(row - idx, col - idx));
-         canMoveLeftUp = board[row - idx][col - idx] === '';
-      } else canMoveLeftUp = false;
+   while (row + idx < rows || row - idx >= 0 || col + idx < cols || col - idx >= 0) {
+      for (let i: number = 0; i < dirs.length; i++) {
+         const [dirRow, dirCol] = dirs[i];
+         const targetRow: number = row + dirRow * idx;
+         const targetCol: number = col + dirCol * idx;
 
-      if (canMoveLeftDown && isValidMove({ origin, target: { row: row + idx, col: col - idx}}, board)) {
-         bishopMoves.push(constructCoords(row + idx, col - idx));
-         canMoveLeftDown = board[row + idx][col - idx] === '';
-      } else canMoveLeftDown = false;
-
-      if (canMoveRightUp && isValidMove({ origin, target: { row: row - idx, col: col + idx}}, board)) {
-         bishopMoves.push(constructCoords(row - idx, col + idx));
-         canMoveRightUp = board[row - idx][col + idx] === '';
-      } else canMoveRightUp = false;
-
-      if (canMoveRightDown && isValidMove({ origin, target: { row: row + idx, col: col + idx}}, board)) {
-         bishopMoves.push(constructCoords(row + idx, col + idx));
-         canMoveRightDown = board[row + idx][col + idx] === '';
-      } else canMoveRightDown = false;
+         if (canMove[i] && isValidMove({ origin, target: {row: targetRow, col: targetCol} }, board)) {
+            bishopMoves.push(constructCoords(targetRow, targetCol));
+            canMove[i] = board[targetRow][targetCol] === '';
+         } else {
+            canMove[i] = false;
+         }
+      }
 
       idx++;
    }
@@ -198,7 +200,7 @@ const getPseudoLegalMoves = (moveData: MoveData): Map<number, Coords[]> => {
 
    for (let i: number = 0; i < rows; i++) {
       for (let j: number = 0; j < cols; j++) {
-         if (board[i][j] === '' || turn !== getPieceColor(board[i][j] as Piece)) continue;
+         if (board[i][j] === '' || turn !== getPieceColor(board[i][j])) continue;
 
          const origin: Coords = constructCoords(i, j);
          const pieceMoves: Coords[] = moves[board[i][j].toUpperCase() as keyof Moves](origin, board, player);
@@ -214,7 +216,7 @@ const willBeChecked = (move: Move, moveData: MoveData): boolean => {
    const { board } = moveData;
    const [rows, cols] = [board.length, board[0].length];
    const { origin, target } = move;
-   const turn: Color = getPieceColor(board[origin.row][origin.col] as Piece);
+   const turn: Color = getPieceColor(board[origin.row][origin.col]);
    const opponent: Color = turn === 'w' ? 'b' : 'w';
    const moveDataTurnOpponent: MoveData = { ...moveData, turn: opponent };
    const kingCoords: Coords = { row: -1, col: -1 };
@@ -227,7 +229,7 @@ const willBeChecked = (move: Move, moveData: MoveData): boolean => {
       for (let j: number = 0; j < cols; j++) {
          if (
             board[i][j].toLowerCase() === 'k' &&
-            getPieceColor(board[i][j] as Piece) === turn
+            getPieceColor(board[i][j]) === turn
          ) {
             kingCoords.row = i;
             kingCoords.col = j;

@@ -10,7 +10,7 @@ import { getLegalMoves, getPieceColor, isChecked } from '../../pieces/pieces.mov
 import { TimerContext } from '../timer/timer.context';
 import { selectBestMove } from '../../utils/stockfish';
 import type { MoveData } from '../../pieces/pieces.moves';
-import type { Color, Piece, Move } from './board.slice';
+import type { Color, Move } from './board.slice';
 import type { Coords } from './board.slice';
 import type { GameData } from '../game/game.utils';
 import type { TimerContextType } from '../timer/timer.context';
@@ -37,7 +37,11 @@ export default function Board() {
 
    const ranks: string[] = player === 'w' ? [...RANKS].reverse() : RANKS;
    const files: string[] = player === 'w' ? FILES : [...FILES].reverse();
-   const board: string[][] = useMemo(() => player === 'w' ? generateBoardFromFen(position) : generateBoardFromFen(position.split('').reverse().join('')), [position, turn, player]);
+   const board: string[][] = useMemo(() => player === 'w' ? 
+      generateBoardFromFen(position) : 
+      generateBoardFromFen(position.split('').reverse().join('')), 
+   [position, turn, player]);
+
    const [checked, setChecked] = useState<boolean>(false);
    const [promotionMove, setPromotionMove] = useState<Move | null>(null);
    const [origin, setOrigin] = useState<Coords>({ row: -1, col: -1 });
@@ -190,7 +194,7 @@ export default function Board() {
                      {
                         !!board[idxRank][idxFile] && 
                         <S.Piece 
-                           draggable={turn === getPieceColor(board[idxRank][idxFile] as Piece)} 
+                           draggable={turn === getPieceColor(board[idxRank][idxFile])} 
                            src={pieces[board[idxRank][idxFile]]}
                            onDragStart={handleDragStart}
                         /> 

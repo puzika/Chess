@@ -3,7 +3,6 @@ import type { RootState } from "../../store/store";
 import { generateFenPositionFromBoard, getUpdatedCastlingState, getEnpassantCell, getBoardStateFromFen, moveBoardPieces } from "./board.utils";
 
 export type Color = 'w' | 'b';
-export type Piece = 'r' | 'n' | 'b' | 'q' | 'k' | 'p' | 'R' | 'N' | 'B' | 'Q' | 'K' | 'P';
 export const FILES: string[] = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
 export const RANKS: string[] = ['1', '2', '3', '4', '5', '6', '7', '8'];
 
