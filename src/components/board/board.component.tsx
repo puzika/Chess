@@ -35,6 +35,8 @@ export default function Board() {
    const gameState: GameState = useAppSelector(selectGameState);
    const bestMoveStr: string = useAppSelector(selectBestMove);
 
+   console.log(gameState);
+
    const ranks: string[] = player === 'w' ? [...RANKS].reverse() : RANKS;
    const files: string[] = player === 'w' ? FILES : [...FILES].reverse();
    const board: string[][] = useMemo(() => player === 'w' ? generateBoardFromFen(position) : generateBoardFromFen(position.split('').reverse().join('')), [position, turn, player]);
@@ -60,21 +62,6 @@ export default function Board() {
    }, [position]);
 
    useEffect(() => {
-      if ((isTimeOver || resigned) && gameState !== 'YET_TO_BEGIN') {
-         const gameData: GameData = {
-            isTimeOver,
-            isChecked: checked,
-            board,
-            hasLegalMoves: hasLegalMoves(allLegalMoves),
-            turn,
-            resigned,
-         };
-
-         dispatch(setOutcomeMessage(gameData));
-      }
-   }, [isTimeOver, resigned]);
-
-   useEffect(() => {
       if (gameState !== 'YET_TO_BEGIN') {
          const check = isChecked(currMoveData);
          const gameData: GameData = {
@@ -89,7 +76,7 @@ export default function Board() {
          setChecked(check);
          dispatch(setOutcomeMessage(gameData));
       }
-   }, [position, turn, player]);
+   }, [position, isTimeOver, resigned]);
 
    const handleDragStart = (e: DragEvent<HTMLImageElement>): void => {
       const parentCell = e.currentTarget.parentElement as HTMLDivElement;
