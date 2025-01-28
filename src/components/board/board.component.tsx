@@ -60,7 +60,7 @@ export default function Board() {
    }, [position]);
 
    useEffect(() => {
-      if ((isTimeOver || resigned) && gameState === 'IN_PROGRESS') {
+      if ((isTimeOver || resigned) && gameState !== 'YET_TO_BEGIN') {
          const gameData: GameData = {
             isTimeOver,
             isChecked: checked,
@@ -75,7 +75,7 @@ export default function Board() {
    }, [isTimeOver, resigned]);
 
    useEffect(() => {
-      if (gameState === 'IN_PROGRESS') {
+      if (gameState !== 'YET_TO_BEGIN') {
          const check = isChecked(currMoveData);
          const gameData: GameData = {
             isTimeOver,
