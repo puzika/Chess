@@ -1,14 +1,14 @@
 import { useState, useEffect, useMemo, useContext, DragEvent, MouseEvent } from 'react';
 import { useAppSelector, useAppDispatch } from '../../store/hooks';
 import { selectPlayer, setOutcomeMessage, selectGameState, selectType } from '../game/game.slice';
-import { RANKS, FILES, selectPosition, selectTurn, selectCastling, selectEnpassant, selectHalfMove, selectFullMove, movePlayer, promote } from './board.slice';
+import { RANKS, FILES, selectPosition, selectTurn, selectCastling, selectEnpassant, selectHalfMove, selectFullMove, makeMove, promote } from './board.slice';
 import { getCellColor, getIdxFromCoords } from './board.utils';
-import { generateBoardFromFen, getLegalMovesForPiece, moveHighlight, captureHighlight, checkHighLight, bestMoveHighlight, isPromotion, hasLegalMoves, getMoveNotation, getBestMoveCoords, isbestMoveCell, isCheckedPiece } from './board.utils';
+import { generateBoardFromFen, getLegalMovesForPiece, moveHighlight, captureHighlight, checkHighLight, bestMoveHighlight, isPromotion, hasLegalMoves, getMoveNotation, getEngineMoveCoords, isMoveCell, isCheckedPiece } from './board.utils';
 import { addPosition } from '../../routes/analysis-route/analysis-route.slice';
 import { pieces } from '../../pieces/pieces.images';
 import { getLegalMoves, getPieceColor, isChecked } from '../../pieces/pieces.moves';
 import { TimerContext } from '../timer/timer.context';
-import { selectBestMove } from '../../utils/stockfish';
+import { selectEngineMove } from '../../utils/stockfish';
 import type { MoveData } from '../../pieces/pieces.moves';
 import type { Color, Move } from './board.slice';
 import type { Coords } from './board.slice';
@@ -33,7 +33,7 @@ export default function Board() {
    const fullMove: number = useAppSelector(selectFullMove);
    const gameType: GameType = useAppSelector(selectType);
    const gameState: GameState = useAppSelector(selectGameState);
-   const bestMoveStr: string = useAppSelector(selectBestMove);
+   const engineMoveStr: string = useAppSelector(selectEngineMove);
 
    const ranks: string[] = player === 'w' ? [...RANKS].reverse() : RANKS;
    const files: string[] = player === 'w' ? FILES : [...FILES].reverse();
@@ -47,7 +47,7 @@ export default function Board() {
    const [origin, setOrigin] = useState<Coords>({ row: -1, col: -1 });
    const [draggedOver, setDraggedOver] = useState<Coords>({row: -1, col: -1});
    const [prevMoveNotation, setPrevMoveNotation] = useState<string>('initial');
-   const bestMove: Move = getBestMoveCoords(bestMoveStr, player);
+   const engineMove: Move = getEngineMoveCoords(engineMoveStr, player);
 
    const currMoveData: MoveData = { board, turn, player, castling, enpassant };
    const allLegalMoves: Map<number, Coords[]> = useMemo(() => getLegalMoves(currMoveData), [turn, player, position]);
@@ -80,6 +80,12 @@ export default function Board() {
       }
    }, [position, isTimeOver, resigned]);
 
+   useEffect(() => {
+      if (engineMoveStr !== '-') {
+         dispatch(makeMove({board, moveCoords: engineMove, player}));
+      }
+   }, [engineMoveStr]);
+
    const hoverOverCell = (cell: HTMLDivElement): void => {
       const row: number = Number(cell.dataset.row);
       const col: number = Number(cell.dataset.col);
@@ -88,13 +94,13 @@ export default function Board() {
       else if (draggedOver.row !== -1 && draggedOver.col !== -1) setDraggedOver({ row: -1, col: -1 });
    }
 
-   const makeMove = (targetRow: number, targetCol: number): void => {
+   const makePlayerMove = (targetRow: number, targetCol: number): void => {
       const target: Coords = { row: targetRow, col: targetCol };
       const moveCoords: Move = { origin: {...origin}, target };
       const piece: string = board[origin.row][origin.col];
       const moveNotation: string = getMoveNotation(moveCoords, player);
 
-      dispatch(movePlayer({board, moveCoords, player}));
+      dispatch(makeMove({board, moveCoords, player}));
       setOrigin({ row: -1, col: -1 });
       setDraggedOver({ row: -1, col: -1 });
       isPromotion(target, piece) ? setPromotionMove(moveCoords) : setPrevMoveNotation(moveNotation);
@@ -126,7 +132,7 @@ export default function Board() {
 
       if (!currLegalMoves.has(getIdxFromCoords({ row, col }))) return;
 
-      makeMove(row, col);
+      makePlayerMove(row, col);
    }
 
    const handleClick = (e: MouseEvent<HTMLDivElement>): void => {
@@ -138,7 +144,7 @@ export default function Board() {
       const isValidOriginCell: boolean = allLegalMoves.has(getIdxFromCoords({ row, col }));
 
       if (isValidOriginCell) setOrigin({ row, col });
-      else if (currLegalMoves.has(getIdxFromCoords({ row, col }))) makeMove(row, col);
+      else if (currLegalMoves.has(getIdxFromCoords({ row, col }))) makePlayerMove(row, col);
    }
 
    const handleMouseOver = (e: MouseEvent<HTMLDivElement>): void => {
@@ -176,7 +182,7 @@ export default function Board() {
 
                      style={{
                         boxShadow: 
-                           isbestMoveCell(bestMove, { row: idxRank, col: idxFile }) && gameType === 'analysis' ? bestMoveHighlight : 
+                           isMoveCell(engineMove, { row: idxRank, col: idxFile }) && gameType === 'analysis' ? bestMoveHighlight : 
                            isCheckedPiece(checked, board[idxRank][idxFile], turn) ? checkHighLight :
                            currLegalMoves.has(getIdxFromCoords({ row: idxRank, col: idxFile })) && !!board[idxRank][idxFile] ? captureHighlight :
                            currLegalMoves.has(getIdxFromCoords({ row: idxRank, col: idxFile })) ? moveHighlight :

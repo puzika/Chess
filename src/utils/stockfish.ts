@@ -1,18 +1,19 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { RootState } from "../store/store";
 
+export const MAX_DEPTH: number = 15;
 export type RequestState = 'idle' | 'pending' | 'succeeded' | 'failed';
 
 type Stockfish = {
    loading: RequestState,
    error: string | null,
-   bestMove: string,
+   engineMove: string,
 }
 
 const initialState: Stockfish = {
    loading: 'idle',
    error: null,
-   bestMove: '-',
+   engineMove: '-',
 }
 
 export type Response = {
@@ -24,11 +25,11 @@ export type Response = {
    mate?: number | null,
 }
 
-export const fetchBestMove = createAsyncThunk(
+export const fetchEngineMove = createAsyncThunk(
    'fetch/bestMove',
-   async (fen: string, { rejectWithValue }) => {
+   async (params: {fen: string, depth: number}, { rejectWithValue }) => {
       try {
-         const depth: number = 15;
+         const { fen, depth } = params;
 
          const response = await fetch(`https://stockfish.online/api/s/v2.php?fen=${fen}&depth=${depth}`);
 
@@ -48,33 +49,33 @@ export const stockfishSlice = createSlice({
    name: 'stockfish',
    initialState,
    reducers: {
-      removeBestMove: (state) => {
-         state.bestMove = '';
+      removeEngineMove: (state) => {
+         state.engineMove = '-';
       }
    },
    extraReducers: (builder) => {
       builder
-         .addCase(fetchBestMove.pending, (state) => {
+         .addCase(fetchEngineMove.pending, (state) => {
             state.loading = 'pending';
          })
-         .addCase(fetchBestMove.rejected, (state, action) => {
+         .addCase(fetchEngineMove.rejected, (state, action) => {
             state.loading = 'failed';
             state.error = action.payload as string | null;
          })
-         .addCase(fetchBestMove.fulfilled, (state, action) => {
+         .addCase(fetchEngineMove.fulfilled, (state, action) => {
             const response: Response = action.payload;
-            const bestMove: string = (response.continuation ?? '').split(' ')[0];
+            const engineMove: string = (response.continuation ?? '').split(' ')[0];
 
             state.loading = 'succeeded';
-            state.bestMove = bestMove ?? '';
+            state.engineMove = engineMove || '-';
          });
    }
 });
 
-export const { removeBestMove } = stockfishSlice.actions;
+export const { removeEngineMove } = stockfishSlice.actions;
 
 export const selectLoading = (state: RootState): RequestState => state.stockfish.loading;
 export const selectError = (state: RootState): string | null => state.stockfish.error;
-export const selectBestMove = (state: RootState): string => state.stockfish.bestMove;
+export const selectEngineMove = (state: RootState): string => state.stockfish.engineMove;
 
 export default stockfishSlice.reducer;

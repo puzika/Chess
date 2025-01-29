@@ -51,7 +51,7 @@ export const boardSlice = createSlice({
    name: 'board',
    initialState,
    reducers: {
-      movePlayer: (state, action: PayloadAction<MovePayload>) => {
+      makeMove: (state, action: PayloadAction<MovePayload>) => {
          const { moveCoords, player, board } = action.payload;
          const { origin, target } = moveCoords;
 
@@ -84,7 +84,7 @@ export const boardSlice = createSlice({
 });
 
 export const { 
-   movePlayer, 
+   makeMove, 
    promote, 
    initialize,
    updateBoardState

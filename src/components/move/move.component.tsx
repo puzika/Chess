@@ -19,7 +19,7 @@ export default function Move({ turn, move, current, idx }: MoveProps) {
          style={{
             boxShadow: current ? `inset 0 0 1.5rem .5rem ${svar.clrHighlight}` : 'none',
          }} 
-         turn={turn}
+         $turn={turn}
          onClick={() => dispatch(jumpToIdx(idx))}
       >
          <p>{move}</p>

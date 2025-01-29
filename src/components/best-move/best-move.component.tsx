@@ -1,9 +1,10 @@
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
-import { selectBestMove } from '../../utils/stockfish';
+import { selectEngineMove } from '../../utils/stockfish';
 import { selectCurrPosition } from '../../routes/analysis-route/analysis-route.slice';
-import { fetchBestMove } from '../../utils/stockfish';
+import { fetchEngineMove } from '../../utils/stockfish';
 import { selectLoading } from '../../utils/stockfish';
 import { selectGameState } from '../game/game.slice';
+import { MAX_DEPTH } from '../../utils/stockfish';
 import Loading from '../loading/loading.component';
 import type { GameState } from '../game/game.slice';
 import type { RequestState } from '../../utils/stockfish';
@@ -13,14 +14,14 @@ export default function BestMove() {
    const dispatch = useAppDispatch();
    const gameState: GameState = useAppSelector(selectGameState);
    const currPosition: string = useAppSelector(selectCurrPosition);
-   const bestMove: string = useAppSelector(selectBestMove);
+   const bestMove: string = useAppSelector(selectEngineMove);
    const requestState: RequestState = useAppSelector(selectLoading);
 
    const handleClick = async () => {
       if (gameState === 'FINISHED') return;
 
       try {
-         await dispatch(fetchBestMove(currPosition)).unwrap();
+         await dispatch(fetchEngineMove({ fen: currPosition, depth: MAX_DEPTH })).unwrap();
       } catch(err) {
          alert(err);
       }

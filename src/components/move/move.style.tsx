@@ -3,7 +3,7 @@ import type { Color } from "../board/board.slice";
 import * as svar from '../../variables.style';
 
 type MoveStyleProps = {
-   turn: Color,
+   $turn: Color,
 }
 
 export const Move = styled.div<MoveStyleProps>`
@@ -13,7 +13,7 @@ export const Move = styled.div<MoveStyleProps>`
    width: 100%;
    height: 5rem;
    color: ${svar.clrNeutralMax};
-   background-color: ${({turn}) => turn === 'w' ? svar.clrCellWhite : svar.clrCellBlack };
+   background-color: ${({$turn}) => $turn === 'w' ? svar.clrCellWhite : svar.clrCellBlack };
    transition: all .2s;
    cursor: pointer;
 

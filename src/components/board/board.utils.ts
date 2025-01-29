@@ -193,12 +193,12 @@ export function getBoardStateFromFen(fen: string): BoardState {
    return updatedBoardState;
 }
 
-export function getBestMoveCoords(bestMoveStr: string, player: Color): Move {
+export function getEngineMoveCoords(engineMoveStr: string, player: Color): Move {
    const ranks: string[] = player === 'w' ? [...RANKS].reverse() : RANKS;
    const files: string[] = player === 'w' ? FILES : [...FILES].reverse();
 
-   const originStr: string = bestMoveStr.slice(0, 2);
-   const targetStr: string = bestMoveStr.slice(2, 4);
+   const originStr: string = engineMoveStr.slice(0, 2);
+   const targetStr: string = engineMoveStr.slice(2, 4);
 
    const origin: Coords = {
       row: ranks.findIndex(curr => curr === originStr[1]),
@@ -220,10 +220,10 @@ export function areSameCoords(c1: Coords, c2: Coords): boolean {
    )
 }
 
-export function isbestMoveCell(bestMove: Move, currCell: Coords) {
+export function isMoveCell(move: Move, currCell: Coords) {
    return (
-      areSameCoords(bestMove.origin, currCell) ||
-      areSameCoords(bestMove.target, currCell)
+      areSameCoords(move.origin, currCell) ||
+      areSameCoords(move.target, currCell)
    )
 }
 

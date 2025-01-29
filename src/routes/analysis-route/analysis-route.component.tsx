@@ -3,7 +3,7 @@ import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import { updateBoardState } from "../../components/board/board.slice";
 import { selectCurrPosition } from "./analysis-route.slice";
 import { selectGameState, setGameState, setGameType } from "../../components/game/game.slice";
-import { removeBestMove } from "../../utils/stockfish";
+import { removeEngineMove } from "../../utils/stockfish";
 import type { GameState } from "../../components/game/game.slice";
 import GameContainer from "../../components/game/game.component";
 import Board from "../../components/board/board.component";
@@ -21,7 +21,7 @@ export default function AnalysisRoute() {
 
    useEffect(() => {
       dispatch(updateBoardState(currPosition));
-      dispatch(removeBestMove());
+      dispatch(removeEngineMove());
    }, [currPosition]);
 
    return (

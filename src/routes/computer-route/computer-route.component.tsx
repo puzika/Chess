@@ -1,7 +1,10 @@
 import { useAppSelector, useAppDispatch } from "../../store/hooks"
-import { selectOutcomeMessage, selectGameState, setGameType, setGameState } from "../../components/game/game.slice"
-import { selectCurrPositionIdx } from "../analysis-route/analysis-route.slice"
+import { selectOutcomeMessage, selectGameState, selectPlayer, selectDepth, setGameType, setGameState } from "../../components/game/game.slice"
+import { selectTurn } from "../../components/board/board.slice"
+import { selectCurrPosition, selectCurrPositionIdx } from "../analysis-route/analysis-route.slice"
+import { fetchEngineMove, removeEngineMove } from "../../utils/stockfish"
 import type { GameState } from "../../components/game/game.slice"
+import type { Color } from "../../components/board/board.slice"
 import GameContainer from "../../components/game/game.component"
 import Board from "../../components/board/board.component"
 import Form from "../../components/form/form.component"
@@ -15,11 +18,30 @@ export default function ComputerRoute() {
    const outcomeMessage: string = useAppSelector(selectOutcomeMessage);
    const gameState: GameState = useAppSelector(selectGameState);
    const currPositionIdx: number = useAppSelector(selectCurrPositionIdx);
+   const turn: Color = useAppSelector(selectTurn);
+   const player: Color = useAppSelector(selectPlayer);
+   const fen: string = useAppSelector(selectCurrPosition);
+   const depth: number = useAppSelector(selectDepth);
+
+   const requestEngineMove = async () => {
+      if (gameState === 'FINISHED') return;
+      
+      try {
+         await dispatch(fetchEngineMove({ fen, depth })).unwrap();
+      } catch(err) {
+         alert(err);
+      }
+   }
 
    useEffect(() => {
       dispatch(setGameType('computer'));
       currPositionIdx === 0 && dispatch(setGameState('YET_TO_BEGIN'));
    }, []);
+
+   useEffect(() => {
+      if (turn !== player) requestEngineMove();
+      else dispatch(removeEngineMove());
+   }, [fen, player]);
 
    return (
       <>
