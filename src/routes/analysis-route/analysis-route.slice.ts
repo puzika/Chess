@@ -50,6 +50,10 @@ export const analysisSlice = createSlice({
          if (idx < 0 || idx >= state.boardPositions.length) return state;
 
          state.currPositionIdx = idx;
+      },
+
+      resetAnalysis: () => {
+         return initialState;
       }
    },
 });
@@ -58,7 +62,8 @@ export const {
    addPosition,
    jumpBack,
    jumpForward,
-   jumpToIdx
+   jumpToIdx,
+   resetAnalysis
 } = analysisSlice.actions;
 
 export const selectBoardPositions = (state: RootState): MovePosition[] => state.analysis.boardPositions;

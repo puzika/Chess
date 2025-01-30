@@ -1,6 +1,7 @@
 import { useState, useEffect, MouseEvent, ChangeEvent, FormEvent } from 'react';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import { startGame, selectGameState } from '../game/game.slice';
+import { resetAnalysis } from '../../routes/analysis-route/analysis-route.slice';
 import type { Color } from '../board/board.slice';
 import type { CardColor } from '../color-card/color-card.component';
 import type { Game, GameState } from '../game/game.slice';
@@ -43,6 +44,7 @@ export default function Form() {
       }
 
       dispatch(startGame(game));
+      dispatch(resetAnalysis());
    }
 
    const handleChangeTime = (e: ChangeEvent<HTMLInputElement>): void => {
