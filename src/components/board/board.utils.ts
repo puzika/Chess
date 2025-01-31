@@ -1,5 +1,6 @@
 import { FILES, RANKS } from "./board.slice";
 import type { BoardState, Color, Coords, Move } from "./board.slice";
+import type { GameType } from "../game/game.slice";
 import * as svar from '../../variables.style';
 
 const ROWS: number = 8;
@@ -233,4 +234,14 @@ export function isCheckedPiece(isChecked: boolean, piece: string, turn: Color): 
    const pieceColor: Color = piece.toLowerCase() === piece ? 'b' : 'w';
 
    return piece.toLowerCase() === 'k' && pieceColor === turn;
+}
+
+export function canDrag(args: { type: GameType, turn: Color, player: Color, piece: string }): boolean {
+   const { type, turn, player, piece } = args;
+   const pieceColor: Color = piece.toLowerCase() === piece ? 'b' : 'w';
+   const draggable: boolean = turn === pieceColor;
+
+   if (type === 'analysis') return draggable;
+
+   return draggable && turn === player;
 }

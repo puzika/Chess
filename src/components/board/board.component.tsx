@@ -3,10 +3,10 @@ import { useAppSelector, useAppDispatch } from '../../store/hooks';
 import { selectPlayer, setOutcomeMessage, selectGameState, selectType } from '../game/game.slice';
 import { RANKS, FILES, selectPosition, selectTurn, selectCastling, selectEnpassant, selectHalfMove, selectFullMove, makeMove, promote } from './board.slice';
 import { getCellColor, getIdxFromCoords } from './board.utils';
-import { generateBoardFromFen, getLegalMovesForPiece, moveHighlight, captureHighlight, checkHighLight, bestMoveHighlight, isPromotion, hasLegalMoves, getMoveNotation, getEngineMoveCoords, isMoveCell, isCheckedPiece } from './board.utils';
+import { generateBoardFromFen, getLegalMovesForPiece, moveHighlight, captureHighlight, checkHighLight, bestMoveHighlight, isPromotion, hasLegalMoves, getMoveNotation, getEngineMoveCoords, isMoveCell, isCheckedPiece, canDrag } from './board.utils';
 import { addPosition } from '../../routes/analysis-route/analysis-route.slice';
 import { pieces } from '../../pieces/pieces.images';
-import { getLegalMoves, getPieceColor, isChecked } from '../../pieces/pieces.moves';
+import { getLegalMoves, isChecked } from '../../pieces/pieces.moves';
 import { TimerContext } from '../timer/timer.context';
 import { selectEngineMove } from '../../utils/stockfish';
 import type { MoveData } from '../../pieces/pieces.moves';
@@ -64,8 +64,10 @@ export default function Board() {
    }, [prevMoveNotation]);
 
    useEffect(() => {
+      const check = isChecked(currMoveData);
+      setChecked(check);
+
       if (gameState !== 'YET_TO_BEGIN') {
-         const check = isChecked(currMoveData);
          const gameData: GameData = {
             isTimeOver,
             isChecked: check,
@@ -75,7 +77,6 @@ export default function Board() {
             resigned,
          };
 
-         setChecked(check);
          dispatch(setOutcomeMessage(gameData));
       }
    }, [position, isTimeOver, resigned]);
@@ -202,7 +203,7 @@ export default function Board() {
                      {
                         !!board[idxRank][idxFile] && 
                         <S.Piece 
-                           draggable={turn === getPieceColor(board[idxRank][idxFile])} 
+                           draggable={canDrag({ type: gameType, piece: board[idxRank][idxFile], turn, player})} 
                            src={pieces[board[idxRank][idxFile]]}
                            onDragStart={handleDragStart}
                         /> 
