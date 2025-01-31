@@ -1,3 +1,4 @@
+import { useRef } from "react"
 import { useAppSelector, useAppDispatch } from "../../store/hooks"
 import { selectOutcomeMessage, selectGameState, selectPlayer, selectDepth, setGameType, setGameState } from "../../components/game/game.slice"
 import { selectTurn } from "../../components/board/board.slice"
@@ -22,14 +23,23 @@ export default function ComputerRoute() {
    const player: Color = useAppSelector(selectPlayer);
    const fen: string = useAppSelector(selectCurrPosition);
    const depth: number = useAppSelector(selectDepth);
+   const abortSignal = useRef<AbortController | null>(null);
 
    const requestEngineMove = async () => {
       if (gameState === 'FINISHED') return;
+
+      if (!!abortSignal.current) {
+         abortSignal.current.abort();
+         abortSignal.current = null;
+      }
+
+      abortSignal.current = new AbortController();
       
       try {
-         await dispatch(fetchEngineMove({ fen, depth })).unwrap();
+         await dispatch(fetchEngineMove({ fen, depth, signal: abortSignal.current.signal })).unwrap();
       } catch(err) {
-         alert(err);
+         if (err === 'Aborted') console.log('Request aborted');
+         else alert(err);
       }
    }
 

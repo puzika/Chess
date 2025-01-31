@@ -60,8 +60,8 @@ export default function Board() {
          position: fullFen,
       }
 
-      dispatch(addPosition(movePosition));
-   }, [position]);
+      if (prevMoveNotation !== 'initial') dispatch(addPosition(movePosition));
+   }, [prevMoveNotation]);
 
    useEffect(() => {
       if (gameState !== 'YET_TO_BEGIN') {
@@ -81,8 +81,10 @@ export default function Board() {
    }, [position, isTimeOver, resigned]);
 
    useEffect(() => {
-      if (engineMoveStr !== '-') {
+      if (engineMoveStr !== '-' && gameType === 'computer') {
+         const moveNotation: string = getMoveNotation(engineMove, player);
          dispatch(makeMove({board, moveCoords: engineMove, player}));
+         setPrevMoveNotation(moveNotation);
       }
    }, [engineMoveStr]);
 

@@ -22,7 +22,7 @@ export const analysisSlice = createSlice({
    reducers: {
       addPosition: (state, action: PayloadAction<MovePosition>) => {
          const { notation, position } = action.payload;
-         const boardPositions = state.boardPositions.slice(0, state.currPositionIdx + 1);
+         const boardPositions: MovePosition[] = state.boardPositions.slice(0, state.currPositionIdx + 1);
 
          const currPosition: MovePosition = boardPositions[state.currPositionIdx];
 

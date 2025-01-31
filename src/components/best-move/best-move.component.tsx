@@ -1,3 +1,4 @@
+import { useRef } from 'react';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import { selectEngineMove } from '../../utils/stockfish';
 import { selectCurrPosition } from '../../routes/analysis-route/analysis-route.slice';
@@ -16,14 +17,23 @@ export default function BestMove() {
    const currPosition: string = useAppSelector(selectCurrPosition);
    const bestMove: string = useAppSelector(selectEngineMove);
    const requestState: RequestState = useAppSelector(selectLoading);
+   const abortSignal = useRef<AbortController | null>(null);
 
    const handleClick = async () => {
       if (gameState === 'FINISHED') return;
 
+      if (!!abortSignal.current) {
+         abortSignal.current.abort();
+         abortSignal.current = null;
+      }
+
+      abortSignal.current = new AbortController();
+
       try {
-         await dispatch(fetchEngineMove({ fen: currPosition, depth: MAX_DEPTH })).unwrap();
+         await dispatch(fetchEngineMove({ fen: currPosition, depth: MAX_DEPTH, signal: abortSignal.current.signal })).unwrap();
       } catch(err) {
-         alert(err);
+         if (err === 'Aborted') console.log('Request aborted');
+         else alert(err);
       }
    }
 

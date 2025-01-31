@@ -27,19 +27,19 @@ export type Response = {
 
 export const fetchEngineMove = createAsyncThunk(
    'fetch/bestMove',
-   async (params: {fen: string, depth: number}, { rejectWithValue }) => {
+   async (params: {fen: string, depth: number, signal: AbortSignal}, { rejectWithValue }) => {
+      const { fen, depth, signal } = params;
+      
       try {
-         const { fen, depth } = params;
-
-         const response = await fetch(`https://stockfish.online/api/s/v2.php?fen=${fen}&depth=${depth}`);
+         const response = await fetch(`https://stockfish.online/api/s/v2.php?fen=${fen}&depth=${depth}`, { signal });
 
          if (response.status === 400) return rejectWithValue('Invalid request');
          if (response.status === 404) return rejectWithValue('The requested resource not found');
-
          if (!response.ok) return rejectWithValue('Oops! Something went wrong...');
 
          return response.json();
       } catch (err) {
+         if (signal.aborted) return rejectWithValue('Aborted');
          return rejectWithValue('Oops! Something went wrong...');
       }
    }
