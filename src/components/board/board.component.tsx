@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useContext, DragEvent, MouseEvent } from 'react';
+import { useState, useEffect, useMemo, useContext, useRef, DragEvent, MouseEvent } from 'react';
 import { useAppSelector, useAppDispatch } from '../../store/hooks';
 import { selectPlayer, setOutcomeMessage, selectGameState, selectType } from '../game/game.slice';
 import { RANKS, FILES, selectPosition, selectTurn, selectCastling, selectEnpassant, selectHalfMove, selectFullMove, makeMove, promote } from './board.slice';
@@ -16,6 +16,7 @@ import type { GameData } from '../game/game.utils';
 import type { TimerContextType } from '../timer/timer.context';
 import type { MovePosition } from '../../routes/analysis-route/analysis-route.slice';
 import type { GameState, GameType } from '../game/game.slice';
+import MoveSound from '../../assets/move.mp3';
 import Promotion from '../promotion/promotion.component';
 import * as S from './board.style';
 import * as svar from '../../variables.style';
@@ -34,7 +35,8 @@ export default function Board() {
    const gameType: GameType = useAppSelector(selectType);
    const gameState: GameState = useAppSelector(selectGameState);
    const engineMoveStr: string = useAppSelector(selectEngineMove);
-
+   
+   const isFirstRender = useRef<boolean>(true);
    const ranks: string[] = player === 'w' ? [...RANKS].reverse() : RANKS;
    const files: string[] = player === 'w' ? FILES : [...FILES].reverse();
    const board: string[][] = useMemo(() => player === 'w' ? 
@@ -53,6 +55,11 @@ export default function Board() {
    const currMoveData: MoveData = { board, turn, player, castling, enpassant };
    const allLegalMoves: Map<number, Coords[]> = useMemo(() => getLegalMoves(currMoveData), [turn, player, position]);
    const currLegalMoves: Set<number> = getLegalMovesForPiece(origin, allLegalMoves);
+
+   useEffect(() => {
+      if (isFirstRender.current) isFirstRender.current = false;
+      else new Audio(MoveSound).play();
+   }, [position]);
 
    useEffect(() => {
       const fullFen: string = `${position} ${turn} ${castling} ${enpassant} ${halfMove} ${fullMove}`;
