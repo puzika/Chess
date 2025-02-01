@@ -47,6 +47,7 @@ export default function Board() {
    const [origin, setOrigin] = useState<Coords>({ row: -1, col: -1 });
    const [draggedOver, setDraggedOver] = useState<Coords>({row: -1, col: -1});
    const [prevMoveNotation, setPrevMoveNotation] = useState<string>('initial');
+   const [enginePromotion, setEnginePromotion] = useState<{ promotionPiece: string, promotionCell: Coords} | null>(null);
    const engineMove: Move = getEngineMoveCoords(engineMoveStr, player);
 
    const currMoveData: MoveData = { board, turn, player, castling, enpassant };
@@ -84,10 +85,31 @@ export default function Board() {
    useEffect(() => {
       if (engineMoveStr !== '-' && gameType === 'computer') {
          const moveNotation: string = getMoveNotation(engineMove, player);
+         const { target, origin } = engineMove;
+
+         if (isPromotion(target, board[origin.row][origin.col])) {
+            // E.G. g7h8q. g7h8 MOVE COORDS AND q IS THE PIECE THE PAWN WILL BE PROMOTED TO
+            const promotionPiece: string = engineMoveStr.slice(-1);
+            const formattedPromotionPiece: string = turn === 'w' ? promotionPiece.toUpperCase() : promotionPiece;
+            setEnginePromotion({ promotionCell: target, promotionPiece: formattedPromotionPiece});
+         }
+         
          dispatch(makeMove({board, moveCoords: engineMove, player}));
          setPrevMoveNotation(moveNotation);
       }
    }, [engineMoveStr]);
+
+   useEffect(() => {
+      if (!!enginePromotion) {
+         console.log(enginePromotion);
+         dispatch(promote({
+            promotion: enginePromotion.promotionPiece,
+            promotionCell: enginePromotion.promotionCell,
+            board,
+            player
+         }));
+      } 
+   }, [enginePromotion])
 
    const hoverOverCell = (cell: HTMLDivElement): void => {
       const row: number = Number(cell.dataset.row);
