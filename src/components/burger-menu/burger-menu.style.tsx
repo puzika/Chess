@@ -28,4 +28,18 @@ export const BurgerMenuIcon = styled.span`
    &::after {
       translate: 0 200%;
    }
+
+   &.open {
+      background-color: transparent;
+   }
+
+   &.open::before {
+      translate: 0;
+      rotate: 135deg;
+   }
+
+   &.open::after {
+      translate: 0;
+      rotate: -135deg;
+   }
 `;
