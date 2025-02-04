@@ -8,7 +8,7 @@ export const HomeContent = styled.div`
    justify-content: center;
    align-items: center;
    gap: 2rem;
-   width: 50%;
+   width: 60%;
 `;
 
 export const Description = styled.p`
