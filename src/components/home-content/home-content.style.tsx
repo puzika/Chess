@@ -1,3 +1,4 @@
+import { responsive } from "../../breakpoints";
 import styled from "styled-components";
 
 export const HomeContent = styled.div`
@@ -7,8 +8,12 @@ export const HomeContent = styled.div`
    flex-direction: column;
    justify-content: center;
    align-items: center;
-   gap: 2rem;
+   gap: 4rem;
    width: 60%;
+
+   ${responsive.mb`
+      width: 80%;
+   `}
 `;
 
 export const Description = styled.p`

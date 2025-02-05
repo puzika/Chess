@@ -11,9 +11,6 @@ const hideForm = css`
 
 export const Overlay = styled.div<Overlay>`
    position: fixed;
-   display: flex;
-   justify-content: center;
-   align-items: center;
    width: 100%;
    top: 0;
    bottom: 0;

@@ -2,7 +2,10 @@ import styled from "styled-components";
 import * as svar from '../../variables.style';
 
 export const Form = styled.form`
-   position: relative;
+   position: absolute;
+   top: 50%;
+   left: 50%;
+   translate: -50% -50%;
    display: flex;
    flex-direction: column;
    align-items: center;

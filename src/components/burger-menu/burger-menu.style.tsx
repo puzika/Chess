@@ -1,45 +1,45 @@
 import styled from "styled-components";
 import * as svar from '../../variables.style';
 
-export const BurgerMenuIcon = styled.span`
+export const BurgerMenuContainer = styled.div`
    position: relative;
-   width: 3.5rem;
+   width: 3rem;
+   aspect-ratio: 1;
+   display: flex;
+   align-items: center;
+   margin-right: 2rem;
+   cursor: pointer;
+
+   &:active span::before {
+      translate: 0 50%;
+   }
+
+   &:active span::after {
+      translate: 0 -50%;
+   }
+`;
+
+export const BurgerMenuIcon = styled.span`
+   width: 100%;
    height: .5rem;
    background-color: ${svar.clrNeutralMax};
    transition: background-color .2s;
-   margin-right: 2rem;
 
    &::before,
    &::after {
       content: '';
       position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
+      width: inherit;
       height: inherit;
       background-color: ${svar.clrNeutralMax};
-      transition: all .5s;
+      transition: all .2s;
    }
 
    &::before {
-      translate: 0 -200%;
+      top: 0;
    }
 
    &::after {
-      translate: 0 200%;
+      bottom: 0;
    }
-
-   &.open {
-      background-color: transparent;
-   }
-
-   &.open::before {
-      translate: 0;
-      rotate: 135deg;
-   }
-
-   &.open::after {
-      translate: 0;
-      rotate: -135deg;
-   }
-`;
+`
