@@ -2,6 +2,7 @@ import { useContext, MouseEvent } from 'react';
 import { MenuContext } from '../burger-menu/burger-menu.context';
 import exitImg from '../../assets/left-arrow.svg';
 import Overlay from '../overlay/overlay.component';
+import VerticalNavigation from '../vertical-navigation/vertical-navigation.component';
 import * as S from './sidebar.style';
 
 export default function Sidebar() {
@@ -26,6 +27,7 @@ export default function Sidebar() {
                <h1>Chess</h1>
                <S.ExitButton onClick={ exitMenu }><S.ExitIcon src={exitImg} /></S.ExitButton>
             </S.SideBarHeader>
+            <VerticalNavigation />
          </S.Sidebar>
       </Overlay>
    )
