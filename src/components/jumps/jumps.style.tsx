@@ -1,5 +1,6 @@
 import styled from "styled-components";
 import * as svar from '../../variables.style';
+import { responsive } from "../../breakpoints";
 
 export const Jumps = styled.div`
    display: flex;
@@ -8,6 +9,10 @@ export const Jumps = styled.div`
    height: 8rem;
    border-radius: inherit;
    overflow: hidden;
+
+   ${responsive.lp`
+      height: 6rem;
+   `}
 `;
 
 export const Jump = styled.button`

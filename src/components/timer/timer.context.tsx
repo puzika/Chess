@@ -17,7 +17,7 @@ const initialState: TimerContextType = {
 export const TimerContext = createContext<TimerContextType>(initialState);
 
 type TimerProviderProps = {
-   children: ReactNode
+   children?: ReactNode
 }
 
 export default function TimerProvider({ children }: TimerProviderProps) {

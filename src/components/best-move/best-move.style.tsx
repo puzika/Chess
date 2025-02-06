@@ -1,3 +1,4 @@
+import { responsive } from "../../breakpoints";
 import styled from "styled-components";
 import * as svar from '../../variables.style';
 
@@ -18,4 +19,8 @@ export const BestMove = styled.button`
    &:hover {
       background-color: ${svar.clrSecondary};
    }
+
+   ${responsive.lp`
+      font-size: 2rem;
+   `}
 `;

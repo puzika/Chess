@@ -2,7 +2,7 @@ import { ReactNode, MouseEvent } from 'react';
 import * as S from './overlay.style';
 
 type OverlayProps = {
-   children: ReactNode,
+   children?: ReactNode,
    clickHandler?: ((e: MouseEvent<HTMLDivElement>) => void) | (() => void),
    isOpen: boolean, 
 }

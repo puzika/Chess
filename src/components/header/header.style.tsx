@@ -1,21 +1,14 @@
 import styled from "styled-components";
 import * as svar from '../../variables.style';
 
-export const HeaderWrapper = styled.header`
-   height: 10rem;
-`
-
-export const Header = styled.div`
-   position: fixed;
-   top: 0;
-   left: 0;
-   width: 100%;
+export const Header = styled.header`
+   flex-shrink: 0;
    display: flex;
    align-items: center;
-   height: inherit;
+   width: 100%;
+   height: 10rem;
    background-color: ${svar.clrPrimary};
    padding: 0 5rem;
-   z-index: 10;
 `;
 
 export const HeaderTitle = styled.h1`

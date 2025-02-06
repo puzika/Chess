@@ -11,7 +11,7 @@ const initialState: ScreenSize = {
 export const ScreenSizeContext = createContext<ScreenSize>(initialState);
 
 type ScreenSizeProps = {
-   children: ReactNode,
+   children?: ReactNode,
 }
 
 export default function ScreenSizeProvider({ children }: ScreenSizeProps) {

@@ -2,7 +2,7 @@ import { ReactNode, MouseEvent } from 'react';
 import * as S from './button.style';
 
 type ButtonProps = {
-   children: ReactNode,
+   children?: ReactNode,
    clickHandler?: ((e: MouseEvent<HTMLButtonElement>) => void) | (() => void),
 }
 

@@ -9,12 +9,10 @@ export default function Header() {
    const { screenSize } = useContext(ScreenSizeContext);
 
    return (
-      <S.HeaderWrapper>
-         <S.Header>
-            { screenSize <= device.mb && (<BurgerMenu />) }
-            <S.HeaderTitle>Chess</S.HeaderTitle>
-            { screenSize > device.mb && (<Navigation />)}
-         </S.Header>
-      </S.HeaderWrapper>
+      <S.Header>
+         { screenSize <= device.mb && (<BurgerMenu />) }
+         <S.HeaderTitle>Chess</S.HeaderTitle>
+         { screenSize > device.mb && (<Navigation />)}
+      </S.Header>
    )
 }
