@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import { updateBoardState } from "../../components/board/board.slice";
 import { selectCurrPosition } from "./analysis-route.slice";

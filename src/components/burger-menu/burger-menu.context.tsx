@@ -7,7 +7,7 @@ type MenuContextType = {
 
 const initialState: MenuContextType = {
    isOpen: false,
-   setIsOpen: (isOpen: boolean) => {}
+   setIsOpen: (_isOpen: boolean) => {}
 };
 
 export const MenuContext = createContext<MenuContextType>(initialState);

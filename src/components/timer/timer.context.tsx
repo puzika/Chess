@@ -9,9 +9,9 @@ export type TimerContextType = {
 
 const initialState: TimerContextType = {
    isTimeOver: false,
-   setIsTimerOver: (isTimerOver: boolean): void => {},
+   setIsTimerOver: (_isTimerOver: boolean): void => {},
    resigned: false,
-   setResigned: (resigned: boolean): void => {},
+   setResigned: (_resigned: boolean): void => {},
 };
 
 export const TimerContext = createContext<TimerContextType>(initialState);
