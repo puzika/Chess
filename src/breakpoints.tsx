@@ -5,7 +5,7 @@ import type { Styles } from "styled-components/dist/types";
 type Devices = 'mbmin' | 'mb' | 'tbmin' | 'tb' | 'lp' | 'dt' | 'tv';
 
 export const device: Record<Devices, number> = {
-   mbmin: 400,   // for small screen mobile
+   mbmin: 450,   // for small screen mobile
    mb: 600,   // for mobile screen 
    tbmin: 750, //for small tablets
    tb: 900,   // for tablets
